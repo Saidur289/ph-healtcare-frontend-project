@@ -1,14 +1,55 @@
 import { ApiResponse } from "@/types/api.types";
 import axios from "axios";
+import { isTokenExpiringSoon } from "../tokenUtils";
+import { cookies, headers } from "next/headers";
+import { getNewTokenWithRefreshToken } from "@/services/auth.service";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 if (!API_BASE_URL) throw new Error("API_BASE_URL is not defined");
-const axiosInstance = () => {
+async function tryRefreshToken(
+  accessToken: string,
+  refreshToken: string,
+): Promise<void> {
+  if (!isTokenExpiringSoon(accessToken)) return;
+  const requestHeader = await headers();
+  console.log("***********************", requestHeader);
+  if (requestHeader.get("x-token-refresh") === "1") {
+    return;
+  }
+  try {
+    console.log("RefreshToken*********************************************");
+    await getNewTokenWithRefreshToken(refreshToken);
+  } catch (error) {
+    console.log("error in try refresh token", error);
+  }
+}
+const axiosInstance = async () => {
+  const cookieStore = await cookies();
+  console.log(
+    "******************************* get cookies",
+    cookieStore.getAll(),
+  );
+  const accessToken = cookieStore.get("accessToken")?.value;
+  const refreshToken = cookieStore.get("refreshToken")?.value;
+  if (accessToken && refreshToken) {
+    await tryRefreshToken(accessToken, refreshToken);
+  }
+  console.log(
+    "Set cookies by axios",
+    "********************************************",
+  );
+  const cookieHeader = cookieStore
+    .getAll()
+    .map((cookie) => `${cookie.name}=${cookie.value}`)
+    .join("; ");
+  // eg. "accessToken=token; refreshToken=token; better-auth.session_token=token"
+  console.log("before send it", cookieHeader);
   const instance = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 3000,
+    timeout: 30000,
     headers: {
       "Content-Type": "application/json",
+      Cookie: cookieHeader,
     },
   });
   return instance;
@@ -22,10 +63,8 @@ const httpGet = async <TData>(
   options?: ApiRequestOptions,
 ): Promise<ApiResponse<TData>> => {
   try {
-    const response = await axiosInstance().get<ApiResponse<TData>>(
-      endpoint,
-      options,
-    );
+    const instance = await axiosInstance();
+    const response = await instance.get<ApiResponse<TData>>(endpoint, options);
     return response.data;
   } catch (error) {
     console.log("Error fetching data");
@@ -38,7 +77,8 @@ const httpPost = async <TData>(
   options?: ApiRequestOptions,
 ): Promise<ApiResponse<TData>> => {
   try {
-    const response = await axiosInstance().post<ApiResponse<TData>>(
+    const instance = await axiosInstance();
+    const response = await instance.post<ApiResponse<TData>>(
       endpoint,
       data,
       options,
@@ -55,7 +95,8 @@ const httpPut = async <TData>(
   options?: ApiRequestOptions,
 ): Promise<ApiResponse<TData>> => {
   try {
-    const response = await axiosInstance().put<ApiResponse<TData>>(
+    const instance = await axiosInstance();
+    const response = await instance.put<ApiResponse<TData>>(
       endpoint,
       data,
       options,
@@ -71,7 +112,8 @@ const httpDelete = async <TData>(
   options?: ApiRequestOptions,
 ): Promise<ApiResponse<TData>> => {
   try {
-    const response = await axiosInstance().delete<ApiResponse<TData>>(
+    const instance = await axiosInstance();
+    const response = await instance.delete<ApiResponse<TData>>(
       endpoint,
       options,
     );
@@ -87,7 +129,8 @@ const httpPatch = async <TData>(
   options?: ApiRequestOptions,
 ): Promise<ApiResponse<TData>> => {
   try {
-    const response = await axiosInstance().patch<ApiResponse<TData>>(
+    const instance = await axiosInstance();
+    const response = await instance.patch<ApiResponse<TData>>(
       endpoint,
       data,
       options,

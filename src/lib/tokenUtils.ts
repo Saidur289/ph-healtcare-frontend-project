@@ -1,16 +1,20 @@
-import { decode, JwtPayload } from "jsonwebtoken";
+"use server";
+import jwt, { JwtPayload } from "jsonwebtoken";
+
 import { setCookie } from "./cookieUtils";
 
 const getTokenSecondsRemaining = (token: string) => {
   if (!token) return 0;
   try {
-    const tokenPayload = decode(token) as JwtPayload;
+    const tokenPayload = jwt.decode(token) as JwtPayload;
     if (tokenPayload && !tokenPayload.exp) return 0;
-    const remainingSeconds = (tokenPayload.exp as number) - Date.now() / 1000;
+    const remainingSeconds =
+      (tokenPayload.exp as number) - Math.floor(Date.now() / 1000);
     console.log("Times Remaining: ", remainingSeconds);
     return remainingSeconds > 0 ? remainingSeconds : 0;
   } catch (error) {
     console.log("Error Accessing Token", error);
+    return 0;
   }
 };
 export const setTokenInCookies = async (
@@ -24,3 +28,15 @@ export const setTokenInCookies = async (
   }
   await setCookie(name, token, maxInSeconds || fallBackMaxAgeSeconds);
 };
+export async function isTokenExpiringSoon(
+  token: string,
+  thresholdInSeconds = 300,
+): Promise<boolean> {
+  const timesRemaining = getTokenSecondsRemaining(token);
+  return timesRemaining > 0 && timesRemaining <= thresholdInSeconds;
+}
+
+export async function isTokenExpired(token: string): Promise<boolean> {
+  const timesRemaining = getTokenSecondsRemaining(token);
+  return timesRemaining === 0;
+}
