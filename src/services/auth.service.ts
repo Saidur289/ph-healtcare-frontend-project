@@ -40,17 +40,21 @@ export async function getUserInfo() {
   try {
     const cookie = await cookies();
     const accessToken = cookie.get("accessToken")?.value;
+    const sessionToken = cookie.get("better-auth.session_token")?.value;
     if (!accessToken) return null;
     const res = await fetch(`${API_BASE_URL}/auth/me`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Cookie: `accessToken=${accessToken}`,
+        Cookie: `accessToken=${accessToken}; better-auth.session_token=${sessionToken}`,
       },
     });
-    if (!res.ok) throw new Error("Failed to get user info");
+    if (!res.ok) {
+      console.log("Failed to get user info");
+      return null;
+    }
     const data = await res.json();
-    return data;
+    return data.data;
   } catch (error) {
     console.log("Error in get user info", error);
     return null;

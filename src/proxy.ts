@@ -30,14 +30,14 @@ export async function proxy(request: NextRequest) {
     console.log("pathname: ", pathname);
     const accessToken = request.cookies.get("accessToken")?.value;
     const refreshToken = request.cookies.get("refreshToken")?.value;
-    console.log("accessToken: ", accessToken);
+
     const decodedAccessToken =
       accessToken &&
       JwtUtils.verifyToken(
         accessToken,
         process.env.ACCESS_TOKEN_SECRET as string,
       ).data;
-    console.log("decodedAccessToken", decodedAccessToken);
+
     const isValidToken =
       accessToken &&
       JwtUtils.verifyToken(
@@ -150,15 +150,17 @@ export async function proxy(request: NextRequest) {
           );
         }
         // email not verified
-        if (!userInfo.isEmailVerified) {
+        if (userInfo.emailVerified === false) {
           if (pathname !== "/verify-email") {
+            console.log("in verify email", userInfo);
             const verifyEmailUrl = new URL("/verify-email", request.url);
             verifyEmailUrl.searchParams.set("email", userInfo.email);
+            console.log("********************************************");
             return NextResponse.redirect(verifyEmailUrl);
           }
           return NextResponse.next();
         }
-        if (userInfo.isEmailVerified && pathname === "/verify-email") {
+        if (userInfo.emailVerified && pathname === "/verify-email") {
           return NextResponse.redirect(
             new URL(
               getDefaultDashboardRoute(userRole as UserRole),

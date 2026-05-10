@@ -10,7 +10,7 @@ const getTokenSecondsRemaining = (token: string) => {
     if (tokenPayload && !tokenPayload.exp) return 0;
     const remainingSeconds =
       (tokenPayload.exp as number) - Math.floor(Date.now() / 1000);
-    console.log("Times Remaining: ", remainingSeconds);
+
     return remainingSeconds > 0 ? remainingSeconds : 0;
   } catch (error) {
     console.log("Error Accessing Token", error);

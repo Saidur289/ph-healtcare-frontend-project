@@ -52,10 +52,11 @@ export const loginAction = async (
     ) {
       throw error;
     }
+    console.log(error.response.data);
     if (
       error &&
       error.response &&
-      error.response.data.message === "Email not verified"
+      error.response.data.message === "Email is not verified"
     ) {
       redirect(`/verify-email?email=${payload.email}`);
     }
