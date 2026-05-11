@@ -5,10 +5,5 @@ export default function AdminDashboardLayout({
 }: {
   children: ReactNode;
 }) {
-  return (
-    <>
-      AdminDashboardLayout
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }

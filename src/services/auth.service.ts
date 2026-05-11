@@ -20,7 +20,11 @@ export async function getNewTokenWithRefreshToken(
     });
     if (!res.ok) throw new Error("Failed to refresh token");
     const data = await res.json();
-    const { accessToken, refreshToken: newRefreshToken, token } = data;
+    const {
+      accessToken,
+      refreshToken: newRefreshToken,
+      sessionToken: token,
+    } = data;
     if (accessToken) {
       await setTokenInCookies("accessToken", accessToken);
     }
