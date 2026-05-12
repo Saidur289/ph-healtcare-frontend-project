@@ -1,12 +1,12 @@
 "use client";
 
-import { getDoctors } from "@/app/(commonLayout)/consultation/_action";
+import { getDoctors } from "@/services/doctor.service";
 import { useQuery } from "@tanstack/react-query";
 
 const DoctorList = () => {
   const { data } = useQuery({
     queryKey: ["doctors"],
-    queryFn: () => getDoctors(),
+    queryFn: getDoctors,
   });
   return (
     <div>

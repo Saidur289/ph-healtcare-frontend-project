@@ -15,7 +15,7 @@ const AdminDashboardContent = () => {
     refetchOnWindowFocus: "always", // Refetch the data when the window regains focus
   });
   const { data } = adminDashboardData as ApiResponse<IAdminDashboardData>;
-  console.log("data*******************************", data);
+
   return (
     <div>
       <StatsCard
