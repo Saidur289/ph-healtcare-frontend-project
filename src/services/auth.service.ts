@@ -9,13 +9,15 @@ if (!API_BASE_URL) {
 }
 export async function getNewTokenWithRefreshToken(
   refreshToken: string,
+  better_auth_session_token: string,
 ): Promise<boolean> {
   try {
+    console.log("*******************************************************************beeterrr",better_auth_session_token)
     const res = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Cookie: `refreshToken=${refreshToken}`,
+        Cookie: `refreshToken=${refreshToken}; better-auth.session_token=${better_auth_session_token}`,
       },
     });
     if (!res.ok) throw new Error("Failed to refresh token");

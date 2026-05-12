@@ -11,9 +11,12 @@ import {
   getNewTokenWithRefreshToken,
   getUserInfo,
 } from "./services/auth.service";
-async function refreshTokenMiddleware(refreshToken: string): Promise<boolean> {
+async function refreshTokenMiddleware(
+  refreshToken: string,
+  token: string,
+): Promise<boolean> {
   try {
-    const refreshed = await getNewTokenWithRefreshToken(refreshToken);
+    const refreshed = await getNewTokenWithRefreshToken(refreshToken, token);
     if (refreshed) {
       return true;
     }
@@ -30,6 +33,12 @@ export async function proxy(request: NextRequest) {
     console.log("pathname: ", pathname);
     const accessToken = request.cookies.get("accessToken")?.value;
     const refreshToken = request.cookies.get("refreshToken")?.value;
+    const better_auth_session_token = request.cookies.get(
+      "better-auth.session_token",
+    )?.value;
+    console.log("accessToken: ", accessToken);
+    console.log("refreshToken: ", refreshToken);
+    console.log("better_auth_session_token: ", better_auth_session_token);
 
     const decodedAccessToken =
       accessToken &&
@@ -67,7 +76,10 @@ export async function proxy(request: NextRequest) {
       });
       console.log("**********************************", response);
       try {
-        const refreshed = await refreshTokenMiddleware(refreshToken);
+        const refreshed = await refreshTokenMiddleware(
+          refreshToken,
+          better_auth_session_token as string,
+        );
         if (refreshed) {
           requestHeaders.set("x-token-refresh", "1");
         }

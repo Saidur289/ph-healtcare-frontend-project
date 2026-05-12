@@ -9,6 +9,7 @@ if (!API_BASE_URL) throw new Error("API_BASE_URL is not defined");
 async function tryRefreshToken(
   accessToken: string,
   refreshToken: string,
+  token: string,
 ): Promise<void> {
   if (!isTokenExpiringSoon(accessToken)) return;
   const requestHeader = await headers();
@@ -18,7 +19,7 @@ async function tryRefreshToken(
   }
   try {
     console.log("RefreshToken*********************************************");
-    await getNewTokenWithRefreshToken(refreshToken);
+    await getNewTokenWithRefreshToken(refreshToken, token);
   } catch (error) {
     console.log("error in try refresh token", error);
   }
@@ -31,8 +32,9 @@ const axiosInstance = async () => {
   );
   const accessToken = cookieStore.get("accessToken")?.value;
   const refreshToken = cookieStore.get("refreshToken")?.value;
-  if (accessToken && refreshToken) {
-    await tryRefreshToken(accessToken, refreshToken);
+  const better_Token = cookieStore.get("better-auth.session_token")?.value;
+  if (accessToken && refreshToken && better_Token) {
+    await tryRefreshToken(accessToken, refreshToken, better_Token);
   }
   console.log(
     "Set cookies by axios",

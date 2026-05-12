@@ -1,4 +1,4 @@
-import { getCommonNavItems } from "@/lib/navItem";
+import { commonNavItems } from "@/lib/navItem";
 import { getUserInfo } from "@/services/auth.service";
 import { NavSection } from "@/types/dashboard.types";
 
@@ -7,7 +7,7 @@ import { getDefaultDashboardRoute } from "@/lib/authUtils";
 
 const DashboardNavbar = async () => {
   const userInfo = await getUserInfo();
-  const navItems: NavSection[] = getCommonNavItems(userInfo.role);
+  const navItems: NavSection[] = commonNavItems(userInfo.role);
   const dashboardHome = getDefaultDashboardRoute(userInfo.role);
   console.log("******************************", navItems, dashboardHome);
   return (
