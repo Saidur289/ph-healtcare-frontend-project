@@ -60,7 +60,7 @@ export const doctorColumn: ColumnDef<IDoctors>[] = [
     header: "Experience",
     cell: ({ row }) => (
       <span className="text-sm font-medium">
-        {row.original.experience || "N/A"}
+        {row.original.experience || "N/A"} years
       </span>
     ),
   },

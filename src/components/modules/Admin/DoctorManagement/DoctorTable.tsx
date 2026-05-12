@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { doctorColumn } from "./doctorsColumns";
 
 const DoctorTable = () => {
-  const { data: doctorsData } = useQuery({
+  const { data: doctorsData, isLoading } = useQuery({
     queryKey: ["doctors"],
     queryFn: getDoctors,
     refetchOnWindowFocus: "always",
@@ -25,6 +25,7 @@ const DoctorTable = () => {
     <DataTable
       data={data}
       columns={doctorColumn}
+      isLoading={isLoading}
       actions={{
         viewData: handleView,
         editData: handleEdit,
