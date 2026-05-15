@@ -1,3 +1,4 @@
+"use client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -43,6 +44,7 @@ export type DataTableFilterConfig =
   | SingleSelectFilterConfig
   | MultiSelectFilterConfig
   | RangeFilterConfig;
+
 export type DataTableRangeValue = Partial<Record<RangeOperator, string>>;
 export type DataTableFilterValue = string | string[] | DataTableRangeValue;
 export type DataTableFilterValues = Record<

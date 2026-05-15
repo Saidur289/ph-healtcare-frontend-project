@@ -18,9 +18,19 @@ import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
+  PaginationState,
+  SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal } from "lucide-react";
+import DataTableFilters, {
+  DataTableFilterConfig,
+  DataTableFilterValue,
+  DataTableFilterValues,
+} from "./DataTableFilters";
+import { PaginationMeta } from "@/types/api.types";
+import { useEffect, useState } from "react";
+import DataTableSearch from "./DataTableSearch";
 interface DataTableActions<TData> {
   viewData: (data: TData) => void;
   editData: (data: TData) => void;
@@ -30,23 +40,58 @@ interface DataTableProps<TData> {
   data: TData[];
   columns: ColumnDef<TData>[];
   actions?: DataTableActions<TData>;
+  toolbarAction?: React.ReactNode;
   isLoading?: boolean;
   emptyMessage?: string;
+  sorting?: {
+    state: SortingState;
+    onSortingChange: (state: SortingState) => void;
+  };
+  pagination?: {
+    state: PaginationState;
+    onPaginationChange: (state: PaginationState) => void;
+  };
+  search?: {
+    initialValue?: string;
+    placeholder?: string;
+    debounceMs?: number;
+    onDebounceChange: (value: string) => void;
+  };
+  filters?: {
+    configs: DataTableFilterConfig[];
+    values: DataTableFilterValues;
+    onFilterChange: (
+      filterId: string,
+      value: DataTableFilterValue | undefined,
+    ) => void;
+    onClearAll?: () => void;
+  };
+  meta?: PaginationMeta;
 }
 
 const DataTable = <TData,>({
-  data,
+  data = [] as TData[],
   columns,
   actions,
   isLoading,
   emptyMessage,
+  toolbarAction,
+  sorting,
+  pagination,
+  search,
+  filters,
+  meta,
 }: DataTableProps<TData>) => {
+  const [hasHydrated, setHasHydrated] = useState(false);
+  useEffect(() => setHasHydrated(true), []);
+  const showLoadingOverlay = Boolean(isLoading) && hasHydrated;
   const tableColumn: ColumnDef<TData>[] = actions
     ? [
         ...columns,
         {
           id: "actions",
           header: "Actions",
+          enableSorting: false,
           cell: ({ row }) => {
             const rawData = row.original;
             return (
@@ -86,12 +131,70 @@ const DataTable = <TData,>({
     data,
     columns: tableColumn,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getCoreRowModel(),
+    getPaginationRowModel: getCoreRowModel(),
+    manualSorting: !!sorting,
+    manualPagination: !!pagination,
+    pageCount: pagination ? Math.max(meta?.totalPages ?? 0, 0) : undefined,
+    state: {
+      ...(sorting ? { sorting: sorting.state } : {}),
+      ...(pagination ? { pagination: pagination.state } : {}),
+    },
+    onSortingChange: sorting
+      ? (updater) => {
+          const currentSortingState = sorting.state;
+          const nextSortingState =
+            typeof updater === "function"
+              ? updater(currentSortingState)
+              : updater;
+          sorting.onSortingChange(nextSortingState);
+        }
+      : undefined,
+    onPaginationChange: pagination
+      ? (updater) => {
+          const currentPaginationState = pagination.state;
+          const nextPaginationState =
+            typeof updater === "function"
+              ? updater(currentPaginationState)
+              : updater;
+          pagination.onPaginationChange(nextPaginationState);
+        }
+      : undefined,
   });
   return (
-    <div>
-      {isLoading && (
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+    <div className="relative">
+      {showLoadingOverlay && (
+        <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            <span className="text-sm text-muted-foreground">Loading...</span>
+          </div>
+        </div>
+      )}
+      {(search || filters || toolbarAction) && (
+        <div className="mb-4 flex flex-wrap items-start gap-3">
+          {search && (
+            <DataTableSearch
+              key={search.initialValue ?? ""}
+              initialValue={search.initialValue}
+              placeholder={search.placeholder}
+              debounceMs={search.debounceMs}
+              isLoading={isLoading}
+              onDebounceChange={search.onDebounceChange}
+            />
+          )}
+          {filters && (
+            <DataTableFilters
+              filters={filters.configs}
+              values={filters.values}
+              onFilterChange={filters.onFilterChange}
+              onClearAll={filters.onClearAll}
+              isLoading={isLoading}
+            />
+          )}
+          {toolbarAction && (
+            <div className="ml-auto shrink-0">{toolbarAction}</div>
+          )}
         </div>
       )}
       <div className="rounded-lg border">
@@ -101,9 +204,29 @@ const DataTable = <TData,>({
               <TableRow key={hg.id}>
                 {hg.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
+                    {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                      <Button
+                        variant={"ghost"}
+                        onClick={header.column.getToggleSortingHandler()}
+                        className="h-auto cursor-pointer p-0 font-semibold hover:bg-transparent hover:text-inherit focus-visible:ring-0"
+                      >
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                        {header.column.getIsSorted() === "asc" ? (
+                          <ArrowUp className="ml-1 h-4 w-4" />
+                        ) : header.column.getIsSorted() === "desc" ? (
+                          <ArrowDown className="ml-1 h-4 w-4" />
+                        ) : (
+                          <ArrowUpDown className="ml-1 h-4 w-4" />
+                        )}
+                      </Button>
+                    ) : (
+                      flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )
                     )}
                   </TableHead>
                 ))}

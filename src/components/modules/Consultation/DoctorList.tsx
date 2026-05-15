@@ -1,6 +1,6 @@
 "use client";
 
-import { getDoctors } from "@/services/doctor.service";
+import { getDoctors } from "@/services/doctor.services";
 import { useQuery } from "@tanstack/react-query";
 
 const DoctorList = () => {
