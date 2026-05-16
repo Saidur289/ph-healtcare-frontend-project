@@ -11,6 +11,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -23,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { Gender, type ICreateDoctorPayload } from "@/types/doctor.types";
+import { Gender } from "@/types/doctor.types";
 import { type ISpecialty } from "@/types/specialty.types";
 import {
   createDoctorFormZodSchema,
@@ -31,19 +32,18 @@ import {
 } from "@/zod/doctor.validation";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import SpecialtiesMultiSelect from "./SpecialtiesMultiSelect";
 
 interface CreateDoctorFormModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   specialties: ISpecialty[];
   isLoadingSpecialties?: boolean;
 }
 
-const getInitialValues = (): ICreateDoctorFormValues => ({
+const defaultValues: ICreateDoctorFormValues = {
   password: "",
   name: "",
   email: "",
@@ -57,7 +57,7 @@ const getInitialValues = (): ICreateDoctorFormValues => ({
   currentWorkingPlace: "",
   designation: "",
   specialties: [],
-});
+};
 
 const getErrorMessage = (error: unknown): string => {
   if (typeof error === "string") {
@@ -80,28 +80,27 @@ const FieldMessage = ({ error }: { error: unknown }) => {
 };
 
 const CreateDoctorFormModal = ({
-  open,
-  onOpenChange,
   specialties,
   isLoadingSpecialties = false,
 }: CreateDoctorFormModalProps) => {
+  const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const router = useRouter();
 
   const { mutateAsync, isPending } = useMutation({
-    mutationFn: (payload: ICreateDoctorPayload) => createDoctorAction(payload),
+    mutationFn: createDoctorAction,
   });
 
   const form = useForm({
-    defaultValues: getInitialValues(),
+    defaultValues,
     onSubmit: async ({ value }) => {
-      const payload: ICreateDoctorPayload = {
+      const payload = {
         password: value.password,
         doctor: {
           name: value.name,
           email: value.email,
           contactNumber: value.contactNumber,
-          address: value.address || undefined,
+          address: value.address,
           registrationNumber: value.registrationNumber,
           experience: value.experience ? Number(value.experience) : undefined,
           gender: value.gender,
@@ -111,7 +110,7 @@ const CreateDoctorFormModal = ({
           designation: value.designation,
         },
         specialties: value.specialties,
-      };
+      } as const;
 
       const result = await mutateAsync(payload);
 
@@ -121,8 +120,9 @@ const CreateDoctorFormModal = ({
       }
 
       toast.success(result.message || "Doctor created successfully");
-      onOpenChange(false);
-      form.reset(getInitialValues());
+      setOpen(false);
+      form.reset();
+
       void queryClient.invalidateQueries({ queryKey: ["doctors"] });
       void queryClient.refetchQueries({
         queryKey: ["doctors"],
@@ -132,23 +132,35 @@ const CreateDoctorFormModal = ({
     },
   });
 
-  useEffect(() => {
-    if (open) {
-      form.reset(getInitialValues());
-    }
-  }, [form, open]);
+  const handleOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      setOpen(nextOpen);
+
+      if (!nextOpen) {
+        form.reset();
+      }
+    },
+    [form],
+  );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <Button type="button" className="ml-auto shrink-0">
+          <Plus className="size-4" />
+          Create Doctor
+        </Button>
+      </DialogTrigger>
+
       <DialogContent
         className="max-h-[90vh] w-[calc(100vw-1.5rem)] max-w-[calc(100vw-1.5rem)] gap-0 overflow-hidden p-0 sm:w-[calc(100vw-3rem)] sm:max-w-[calc(100vw-3rem)] md:w-[calc(100vw-4rem)] md:max-w-[calc(100vw-4rem)] lg:w-[min(92vw,78rem)] lg:max-w-[min(92vw,78rem)] xl:w-[min(88vw,88rem)] xl:max-w-[min(88vw,88rem)] 2xl:w-[min(84vw,96rem)] 2xl:max-w-[min(84vw,96rem)]"
         onInteractOutside={(event) => event.preventDefault()}
         onEscapeKeyDown={(event) => event.preventDefault()}
       >
         <DialogHeader className="border-b px-6 py-5 pr-14">
-          <DialogTitle>Add Doctor</DialogTitle>
+          <DialogTitle>Create Doctor</DialogTitle>
           <DialogDescription>
-            Create a new doctor profile and assign specialties.
+            Add a new doctor profile with account credentials and specialties.
           </DialogDescription>
         </DialogHeader>
 
@@ -192,7 +204,7 @@ const CreateDoctorFormModal = ({
                       field={field}
                       label="Email"
                       type="email"
-                      placeholder="Enter doctor email"
+                      placeholder="doctor@example.com"
                     />
                   )}
                 </form.Field>
@@ -208,7 +220,7 @@ const CreateDoctorFormModal = ({
                       field={field}
                       label="Password"
                       type="password"
-                      placeholder="Enter password"
+                      placeholder="Enter temporary password"
                     />
                   )}
                 </form.Field>
@@ -338,7 +350,7 @@ const CreateDoctorFormModal = ({
                     return (
                       <div className="space-y-1.5">
                         <Label
-                          htmlFor="create-doctor-gender"
+                          htmlFor="doctor-gender"
                           className={cn(firstError && "text-destructive")}
                         >
                           Gender
@@ -353,7 +365,7 @@ const CreateDoctorFormModal = ({
                           }}
                         >
                           <SelectTrigger
-                            id="create-doctor-gender"
+                            id="doctor-gender"
                             className={cn(
                               "w-full",
                               firstError && "border-destructive",

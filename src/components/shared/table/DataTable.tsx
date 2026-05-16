@@ -32,10 +32,11 @@ import { PaginationMeta } from "@/types/api.types";
 import { useEffect, useState } from "react";
 import DataTableSearch from "./DataTableSearch";
 import DataTablePagination from "./DataTablePagination";
+
 interface DataTableActions<TData> {
-  viewData: (data: TData) => void;
-  editData: (data: TData) => void;
-  deleteData: (data: TData) => void;
+  onView?: (data: TData) => void;
+  onEdit?: (data: TData) => void;
+  onDelete?: (data: TData) => void;
 }
 interface DataTableProps<TData> {
   data: TData[];
@@ -104,19 +105,19 @@ const DataTable = <TData,>({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  {actions.viewData && (
-                    <DropdownMenuItem onClick={() => actions.viewData(rawData)}>
+                  {actions.onView && (
+                    <DropdownMenuItem onClick={() => actions.onView?.(rawData)}>
                       View
                     </DropdownMenuItem>
                   )}
-                  {actions.editData && (
-                    <DropdownMenuItem onClick={() => actions.editData(rawData)}>
+                  {actions.onEdit && (
+                    <DropdownMenuItem onClick={() => actions.onEdit?.(rawData)}>
                       Edit
                     </DropdownMenuItem>
                   )}
-                  {actions.deleteData && (
+                  {actions.onDelete && (
                     <DropdownMenuItem
-                      onClick={() => actions.deleteData(rawData)}
+                      onClick={() => actions.onDelete?.(rawData)}
                     >
                       Delete
                     </DropdownMenuItem>

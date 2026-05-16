@@ -9,7 +9,7 @@ import {
 } from "@/hooks/useServerManagedDataTableFilters";
 import { useSearchParams } from "next/navigation";
 import { useServerManagedDataTable } from "@/hooks/useServerManagedDataTable";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useServerManagedDataTableSearch } from "@/hooks/useServerManagedDataTableSearch";
 import { ISpecialty } from "@/types/specialty.types";
 import { PaginationMeta } from "@/types/api.types";
@@ -17,8 +17,14 @@ import {
   DataTableFilterConfig,
   DataTableFilterValues,
 } from "@/components/shared/table/DataTableFilters";
-import { Button } from "@/components/ui/button";
+
 import CreateDoctorFormModal from "./CreateDoctorFormModal";
+import DeleteDoctorConfirmationDialog from "./DeleteDoctorConfirmationDialog";
+import { useRowActionModalState } from "@/hooks/useRowActionModalState";
+import { IDoctors } from "@/types/doctor.types";
+import EditDoctorFormModal from "./EditDoctorFormModal";
+import ViewDoctorProfileDialog from "./ViewDoctorProfileDialog";
+import { on } from "events";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 10;
@@ -51,8 +57,19 @@ const DoctorTable = ({
   });
 
   const queryString = queryStringFromUrl || initialQueryString;
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  const {
+    isDeleteDialogOpen,
+    isViewDialogOpen,
+    isEditDialogOpen,
+    viewingItem,
+    deletingItem,
+    tableActions,
+    editingItem,
+    onViewOpenChange,
+    onDeleteOpenChange,
+    onEditOpenChange,
+  } = useRowActionModalState<IDoctors>();
   const { searchTermFromUrl, handleDebouncedSearchChange } =
     useServerManagedDataTableSearch({ searchParams, updateParams });
 
@@ -149,15 +166,31 @@ const DoctorTable = ({
           onFilterChange: handleFilterChange,
           onClearAll: clearAllFilters,
         }}
+        actions={tableActions}
         toolbarAction={
-          <Button onClick={() => setIsCreateModalOpen(true)}>Add Doctor</Button>
+          <CreateDoctorFormModal
+            specialties={specialties}
+            isLoadingSpecialties={isLoadingSpecialties}
+          />
         }
       />
-      <CreateDoctorFormModal
-        open={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
+      <EditDoctorFormModal
+        open={isEditDialogOpen}
+        onOpenChange={onEditOpenChange}
+        doctor={editingItem}
         specialties={specialties}
         isLoadingSpecialties={isLoadingSpecialties}
+      />
+      <ViewDoctorProfileDialog
+        open={isViewDialogOpen}
+        onOpenChange={onViewOpenChange}
+        doctor={viewingItem}
+      />
+
+      <DeleteDoctorConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={onDeleteOpenChange}
+        doctor={deletingItem}
       />
     </>
   );

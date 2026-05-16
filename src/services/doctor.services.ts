@@ -56,6 +56,7 @@ export const updateDoctor = async (
 export const deleteDoctor = async (id: string) => {
   try {
     const doctor = await httpClient.delete<[message: string]>(`/doctors/${id}`);
+    console.log("fetch api call*****************************");
     return doctor;
   } catch (error) {
     console.log("Error deleting doctor", error);
