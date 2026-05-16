@@ -31,6 +31,7 @@ import DataTableFilters, {
 import { PaginationMeta } from "@/types/api.types";
 import { useEffect, useState } from "react";
 import DataTableSearch from "./DataTableSearch";
+import DataTablePagination from "./DataTablePagination";
 interface DataTableActions<TData> {
   viewData: (data: TData) => void;
   editData: (data: TData) => void;
@@ -127,7 +128,7 @@ const DataTable = <TData,>({
         },
       ]
     : columns;
-  const { getHeaderGroups, getRowModel } = useReactTable({
+  const table = useReactTable({
     data,
     columns: tableColumn,
     getCoreRowModel: getCoreRowModel(),
@@ -200,7 +201,7 @@ const DataTable = <TData,>({
       <div className="rounded-lg border">
         <Table>
           <TableHeader>
-            {getHeaderGroups().map((hg) => (
+            {table.getHeaderGroups().map((hg) => (
               <TableRow key={hg.id}>
                 {hg.headers.map((header) => (
                   <TableHead key={header.id}>
@@ -234,8 +235,8 @@ const DataTable = <TData,>({
             ))}
           </TableHeader>
           <TableBody>
-            {getRowModel().rows.length ? (
-              getRowModel().rows.map((row) => (
+            {table.getRowModel().rows.length ? (
+              table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -259,6 +260,14 @@ const DataTable = <TData,>({
             )}
           </TableBody>
         </Table>
+        {pagination && (
+          <DataTablePagination
+            table={table}
+            totalRows={meta?.total}
+            totalPages={meta?.totalPages}
+            isLoading={isLoading}
+          />
+        )}
       </div>
     </div>
   );
