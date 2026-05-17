@@ -30,15 +30,12 @@ async function refreshTokenMiddleware(
 export async function proxy(request: NextRequest) {
   try {
     const { pathname } = request.nextUrl;
-    console.log("pathname: ", pathname);
+
     const accessToken = request.cookies.get("accessToken")?.value;
     const refreshToken = request.cookies.get("refreshToken")?.value;
     const better_auth_session_token = request.cookies.get(
       "better-auth.session_token",
     )?.value;
-    console.log("accessToken: ", accessToken);
-    console.log("refreshToken: ", refreshToken);
-    console.log("better_auth_session_token: ", better_auth_session_token);
 
     const decodedAccessToken =
       accessToken &&
@@ -74,7 +71,7 @@ export async function proxy(request: NextRequest) {
           headers: requestHeaders,
         },
       });
-      console.log("**********************************", response);
+
       try {
         const refreshed = await refreshTokenMiddleware(
           refreshToken,
@@ -92,7 +89,7 @@ export async function proxy(request: NextRequest) {
       } catch (error) {
         console.log("error in refresh Token", error);
       }
-      console.log("********************************", response);
+
       return response;
     }
     //Rule: 1  - if route is auth route and user is logged in, redirect to dashboard
@@ -164,10 +161,9 @@ export async function proxy(request: NextRequest) {
         // email not verified
         if (userInfo.emailVerified === false) {
           if (pathname !== "/verify-email") {
-            console.log("in verify email", userInfo);
             const verifyEmailUrl = new URL("/verify-email", request.url);
             verifyEmailUrl.searchParams.set("email", userInfo.email);
-            console.log("********************************************");
+
             return NextResponse.redirect(verifyEmailUrl);
           }
           return NextResponse.next();

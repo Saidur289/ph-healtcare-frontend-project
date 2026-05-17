@@ -98,11 +98,11 @@ export const doctorColumn: ColumnDef<IDoctors>[] = [
     ),
   },
   {
-    id: "createAt",
+    id: "createdAt",
     accessorKey: "createdAt",
     header: "Joined At",
-    cell: ({ row }) => {
-      <DateCell date={row.original.createdAt} formatString="MM dd, yyyy" />;
-    },
+    cell: ({ row }) => (
+      <DateCell date={row.original.createdAt} formatString="MM dd, yyyy" />
+    ),
   },
 ];

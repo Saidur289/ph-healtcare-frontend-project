@@ -52,7 +52,7 @@ export const loginAction = async (
     ) {
       throw error;
     }
-    console.log(error.response.data);
+
     if (
       error &&
       error.response &&

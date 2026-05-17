@@ -18,7 +18,6 @@ const DashboardSidebarContent = ({
   dashboardHome,
   userInfo,
 }: DashboardSidebarContentProps) => {
-  console.log("userInfo in sidebar ****************************", userInfo);
   const pathname = usePathname();
   return (
     <div className="hidden md:flex h-full w-64 flex-col border-r bg-card overflow-y-auto">

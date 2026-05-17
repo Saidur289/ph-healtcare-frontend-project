@@ -1,21 +1,11 @@
-"use server";
-
 import {
   createSchedule,
   deleteSchedule,
   getScheduleById,
-  updateSchedule,
 } from "@/services/schedule.services";
-import { type ApiErrorResponse, type ApiResponse } from "@/types/api.types";
-import {
-  type ICreateSchedulePayload,
-  type ISchedule,
-  type IUpdateSchedulePayload,
-} from "@/types/schedule.types";
-import {
-  createScheduleServerZodSchema,
-  updateScheduleServerZodSchema,
-} from "@/zod/schedule.validation";
+import { ApiErrorResponse, ApiResponse } from "@/types/api.types";
+import { ICreateSchedulePayload, ISchedule } from "@/types/schedule.types";
+import { createScheduleFormZodSchema } from "@/zod/schedule.validation";
 
 const getActionErrorMessage = (error: unknown, fallbackMessage: string) => {
   if (
@@ -39,12 +29,10 @@ const getActionErrorMessage = (error: unknown, fallbackMessage: string) => {
 
   return fallbackMessage;
 };
-
 export const createScheduleAction = async (
   payload: ICreateSchedulePayload,
 ): Promise<ApiResponse<ISchedule[]> | ApiErrorResponse> => {
-  const parsedPayload = createScheduleServerZodSchema.safeParse(payload);
-
+  const parsedPayload = createScheduleFormZodSchema.safeParse(payload);
   if (!parsedPayload.success) {
     return {
       success: false,
@@ -57,24 +45,21 @@ export const createScheduleAction = async (
   } catch (error: unknown) {
     return {
       success: false,
-      message: getActionErrorMessage(error, "Failed to create schedules"),
+      message: getActionErrorMessage(error, "Failed to create schedule"),
     };
   }
 };
-
 export const updateScheduleAction = async (
   id: string,
-  payload: IUpdateSchedulePayload,
-): Promise<ApiResponse<ISchedule> | ApiErrorResponse> => {
+  payload: ICreateSchedulePayload,
+): Promise<ApiResponse<ISchedule[]> | ApiErrorResponse> => {
   if (!id) {
     return {
       success: false,
       message: "Invalid schedule id",
     };
   }
-
-  const parsedPayload = updateScheduleServerZodSchema.safeParse(payload);
-
+  const parsedPayload = createScheduleFormZodSchema.safeParse(payload);
   if (!parsedPayload.success) {
     return {
       success: false,
@@ -83,7 +68,7 @@ export const updateScheduleAction = async (
   }
 
   try {
-    return await updateSchedule(id, parsedPayload.data);
+    return await createSchedule(parsedPayload.data);
   } catch (error: unknown) {
     return {
       success: false,
@@ -91,7 +76,6 @@ export const updateScheduleAction = async (
     };
   }
 };
-
 export const deleteScheduleAction = async (
   id: string,
 ): Promise<ApiResponse<boolean> | ApiErrorResponse> => {
@@ -101,7 +85,6 @@ export const deleteScheduleAction = async (
       message: "Invalid schedule id",
     };
   }
-
   try {
     return await deleteSchedule(id);
   } catch (error: unknown) {
@@ -111,7 +94,6 @@ export const deleteScheduleAction = async (
     };
   }
 };
-
 export const getScheduleByIdAction = async (
   id: string,
 ): Promise<ApiResponse<ISchedule> | ApiErrorResponse> => {
@@ -121,7 +103,6 @@ export const getScheduleByIdAction = async (
       message: "Invalid schedule id",
     };
   }
-
   try {
     return await getScheduleById(id);
   } catch (error: unknown) {

@@ -7,7 +7,6 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
-import React from "react";
 
 const AdminDashboardLayoutPage = async () => {
   const queryClient = new QueryClient();
@@ -21,7 +20,7 @@ const AdminDashboardLayoutPage = async () => {
   const dashboardData = queryClient.getQueryData([
     "admin-dashboard-data",
   ]) as ApiResponse<IAdminDashboardData>;
-  console.log(dashboardData.data, "Dashboard data from page components");
+
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <AdminDashboardContent />

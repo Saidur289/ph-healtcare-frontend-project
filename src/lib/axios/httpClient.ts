@@ -13,12 +13,11 @@ async function tryRefreshToken(
 ): Promise<void> {
   if (!isTokenExpiringSoon(accessToken)) return;
   const requestHeader = await headers();
-  console.log("***********************", requestHeader);
+
   if (requestHeader.get("x-token-refresh") === "1") {
     return;
   }
   try {
-    console.log("RefreshToken*********************************************");
     await getNewTokenWithRefreshToken(refreshToken, token);
   } catch (error) {
     console.log("error in try refresh token", error);
@@ -26,26 +25,20 @@ async function tryRefreshToken(
 }
 const axiosInstance = async () => {
   const cookieStore = await cookies();
-  console.log(
-    "******************************* get cookies",
-    cookieStore.getAll(),
-  );
+
   const accessToken = cookieStore.get("accessToken")?.value;
   const refreshToken = cookieStore.get("refreshToken")?.value;
   const better_Token = cookieStore.get("better-auth.session_token")?.value;
   if (accessToken && refreshToken && better_Token) {
     await tryRefreshToken(accessToken, refreshToken, better_Token);
   }
-  console.log(
-    "Set cookies by axios",
-    "********************************************",
-  );
+
   const cookieHeader = cookieStore
     .getAll()
     .map((cookie) => `${cookie.name}=${cookie.value}`)
     .join("; ");
   // eg. "accessToken=token; refreshToken=token; better-auth.session_token=token"
-  console.log("before send it", cookieHeader);
+
   const instance = axios.create({
     baseURL: API_BASE_URL,
     timeout: 30000,

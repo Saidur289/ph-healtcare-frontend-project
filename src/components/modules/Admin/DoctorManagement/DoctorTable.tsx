@@ -24,7 +24,6 @@ import { useRowActionModalState } from "@/hooks/useRowActionModalState";
 import { IDoctors } from "@/types/doctor.types";
 import EditDoctorFormModal from "./EditDoctorFormModal";
 import ViewDoctorProfileDialog from "./ViewDoctorProfileDialog";
-import { on } from "events";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 10;
@@ -69,7 +68,11 @@ const DoctorTable = ({
     onViewOpenChange,
     onDeleteOpenChange,
     onEditOpenChange,
-  } = useRowActionModalState<IDoctors>();
+  } = useRowActionModalState<IDoctors>({
+    enableView: true,
+    enableEdit: true,
+    enableDelete: true,
+  });
   const { searchTermFromUrl, handleDebouncedSearchChange } =
     useServerManagedDataTableSearch({ searchParams, updateParams });
 

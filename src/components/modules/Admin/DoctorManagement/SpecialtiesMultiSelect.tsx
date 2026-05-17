@@ -55,11 +55,11 @@ const SpecialtiesMultiSelect = ({
                 (item) => item.id === specialtyId,
               );
 
-              return specialty ? (
-                <Badge key={specialty.id} variant="secondary">
-                  {specialty.title}
+              return (
+                <Badge key={specialtyId} variant="secondary">
+                  {specialty?.title ?? specialtyId}
                 </Badge>
-              ) : null;
+              );
             })}
           </div>
         )}

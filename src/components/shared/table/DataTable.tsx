@@ -87,7 +87,10 @@ const DataTable = <TData,>({
   const [hasHydrated, setHasHydrated] = useState(false);
   useEffect(() => setHasHydrated(true), []);
   const showLoadingOverlay = Boolean(isLoading) && hasHydrated;
-  const tableColumn: ColumnDef<TData>[] = actions
+  const hasActions = Boolean(
+    actions && (actions.onView || actions.onEdit || actions.onDelete),
+  );
+  const tableColumn: ColumnDef<TData>[] = hasActions
     ? [
         ...columns,
         {
@@ -105,17 +108,17 @@ const DataTable = <TData,>({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  {actions.onView && (
+                  {actions?.onView && (
                     <DropdownMenuItem onClick={() => actions.onView?.(rawData)}>
                       View
                     </DropdownMenuItem>
                   )}
-                  {actions.onEdit && (
+                  {actions?.onEdit && (
                     <DropdownMenuItem onClick={() => actions.onEdit?.(rawData)}>
                       Edit
                     </DropdownMenuItem>
                   )}
-                  {actions.onDelete && (
+                  {actions?.onDelete && (
                     <DropdownMenuItem
                       onClick={() => actions.onDelete?.(rawData)}
                     >

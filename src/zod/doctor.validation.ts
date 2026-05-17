@@ -13,22 +13,30 @@ const emptyStringToUndefined = (value: unknown) => {
   return value;
 };
 
+/* =========================
+   CREATE FORM SCHEMA
+========================= */
+
 export const createDoctorFormZodSchema = z.object({
   password: z
     .string()
     .min(6, "Password must be at least 6 characters")
     .max(20, "Password must be at most 20 characters"),
+
   name: z
     .string()
     .trim()
     .min(5, "Name must be at least 5 characters")
     .max(30, "Name must be at most 30 characters"),
+
   email: z.email("Invalid email address"),
+
   contactNumber: z
     .string()
     .trim()
     .min(11, "Contact number must be at least 11 characters")
     .max(14, "Contact number must be at most 14 characters"),
+
   address: z
     .string()
     .trim()
@@ -37,10 +45,12 @@ export const createDoctorFormZodSchema = z.object({
       (value) => value.length === 0 || value.length >= 10,
       "Address must be at least 10 characters",
     ),
+
   registrationNumber: z
     .string()
     .trim()
     .min(1, "Registration number is required"),
+
   experience: z
     .string()
     .trim()
@@ -48,9 +58,11 @@ export const createDoctorFormZodSchema = z.object({
       (value) => value.length === 0 || /^\d+$/.test(value),
       "Experience must be an integer",
     ),
+
   gender: z.enum([Gender.MALE, Gender.FEMALE], {
     message: "Gender must be either MALE or FEMALE",
   }),
+
   appointmentFee: z
     .string()
     .trim()
@@ -63,43 +75,55 @@ export const createDoctorFormZodSchema = z.object({
       (value) => Number(value) >= 0,
       "Appointment fee cannot be negative",
     ),
+
   qualification: z
     .string()
     .trim()
-    .min(2, "Qualification must be at least 2 characters")
+    .min(5, "Qualification must be at least 5 characters")
     .max(50, "Qualification must be at most 50 characters"),
+
   currentWorkingPlace: z
     .string()
     .trim()
-    .min(2, "Current working place must be at least 2 characters")
+    .min(5, "Current working place must be at least 5 characters")
     .max(50, "Current working place must be at most 50 characters"),
+
   designation: z
     .string()
     .trim()
     .min(2, "Designation must be at least 2 characters")
     .max(50, "Designation must be at most 50 characters"),
+
   specialties: z
     .array(z.uuid("Please select a valid specialty"))
     .min(1, "At least one specialty is required"),
 });
+
+/* =========================
+   CREATE SERVER SCHEMA
+========================= */
 
 export const createDoctorServerZodSchema = z.object({
   password: z
     .string()
     .min(6, "Password must be at least 6 characters")
     .max(20, "Password must be at most 20 characters"),
+
   doctor: z.object({
     name: z
       .string()
       .trim()
       .min(5, "Name must be at least 5 characters")
       .max(30, "Name must be at most 30 characters"),
+
     email: z.email("Invalid email address"),
+
     contactNumber: z
       .string()
       .trim()
       .min(11, "Contact number must be at least 11 characters")
       .max(14, "Contact number must be at most 14 characters"),
+
     address: z.preprocess(
       emptyStringToUndefined,
       z
@@ -109,10 +133,12 @@ export const createDoctorServerZodSchema = z.object({
         .max(100, "Address must be at most 100 characters")
         .optional(),
     ),
+
     registrationNumber: z
       .string()
       .trim()
       .min(1, "Registration number is required"),
+
     experience: z.preprocess(
       emptyStringToUndefined,
       z.coerce
@@ -121,32 +147,42 @@ export const createDoctorServerZodSchema = z.object({
         .nonnegative("Experience cannot be negative")
         .optional(),
     ),
+
     gender: z.enum([Gender.MALE, Gender.FEMALE], {
       message: "Gender must be either MALE or FEMALE",
     }),
+
     appointmentFee: z.coerce
       .number({ error: "Appointment fee must be a number" })
       .nonnegative("Appointment fee cannot be negative"),
+
     qualification: z
       .string()
       .trim()
-      .min(2, "Qualification must be at least 2 characters")
+      .min(5, "Qualification must be at least 5 characters")
       .max(50, "Qualification must be at most 50 characters"),
+
     currentWorkingPlace: z
       .string()
       .trim()
-      .min(2, "Current working place must be at least 2 characters")
+      .min(5, "Current working place must be at least 5 characters")
       .max(50, "Current working place must be at most 50 characters"),
+
     designation: z
       .string()
       .trim()
       .min(2, "Designation must be at least 2 characters")
       .max(50, "Designation must be at most 50 characters"),
   }),
+
   specialties: z
     .array(z.uuid("Please select a valid specialty"))
     .min(1, "At least one specialty is required"),
 }) satisfies z.ZodType<ICreateDoctorPayload>;
+
+/* =========================
+   EDIT FORM SCHEMA
+========================= */
 
 export const editDoctorFormZodSchema = z.object({
   name: z
@@ -154,11 +190,13 @@ export const editDoctorFormZodSchema = z.object({
     .trim()
     .min(5, "Name must be at least 5 characters")
     .max(30, "Name must be at most 30 characters"),
+
   contactNumber: z
     .string()
     .trim()
     .min(11, "Contact number must be at least 11 characters")
     .max(14, "Contact number must be at most 14 characters"),
+
   address: z
     .string()
     .trim()
@@ -167,10 +205,12 @@ export const editDoctorFormZodSchema = z.object({
       (value) => value.length === 0 || value.length >= 10,
       "Address must be at least 10 characters",
     ),
+
   registrationNumber: z
     .string()
     .trim()
     .min(1, "Registration number is required"),
+
   experience: z
     .string()
     .trim()
@@ -178,9 +218,11 @@ export const editDoctorFormZodSchema = z.object({
       (value) => value.length === 0 || /^\d+$/.test(value),
       "Experience must be an integer",
     ),
+
   gender: z.enum([Gender.MALE, Gender.FEMALE], {
     message: "Gender must be either MALE or FEMALE",
   }),
+
   appointmentFee: z
     .string()
     .trim()
@@ -193,41 +235,57 @@ export const editDoctorFormZodSchema = z.object({
       (value) => Number(value) >= 0,
       "Appointment fee cannot be negative",
     ),
+
   qualification: z
     .string()
     .trim()
-    .min(2, "Qualification must be at least 2 characters")
+    .min(5, "Qualification must be at least 5 characters")
     .max(50, "Qualification must be at most 50 characters"),
+
   currentWorkingPlace: z
     .string()
     .trim()
-    .min(2, "Current working place must be at least 2 characters")
+    .min(5, "Current working place must be at least 5 characters")
     .max(50, "Current working place must be at most 50 characters"),
+
   designation: z
     .string()
     .trim()
     .min(2, "Designation must be at least 2 characters")
     .max(50, "Designation must be at most 50 characters"),
+
   specialties: z
     .array(z.uuid("Please select a valid specialty"))
     .min(1, "At least one specialty is required"),
 });
 
+/* =========================
+   UPDATE SERVER SCHEMA
+========================= */
+
 export const updateDoctorServerZodSchema = z.object({
   doctor: z
     .object({
-      name: z
-        .string()
-        .trim()
-        .min(5, "Name must be at least 5 characters")
-        .max(30, "Name must be at most 30 characters")
-        .optional(),
-      contactNumber: z
-        .string()
-        .trim()
-        .min(11, "Contact number must be at least 11 characters")
-        .max(14, "Contact number must be at most 14 characters")
-        .optional(),
+      name: z.preprocess(
+        emptyStringToUndefined,
+        z
+          .string()
+          .trim()
+          .min(5, "Name must be at least 5 characters")
+          .max(30, "Name must be at most 30 characters")
+          .optional(),
+      ),
+
+      contactNumber: z.preprocess(
+        emptyStringToUndefined,
+        z
+          .string()
+          .trim()
+          .min(11, "Contact number must be at least 11 characters")
+          .max(14, "Contact number must be at most 14 characters")
+          .optional(),
+      ),
+
       address: z.preprocess(
         emptyStringToUndefined,
         z
@@ -237,11 +295,12 @@ export const updateDoctorServerZodSchema = z.object({
           .max(100, "Address must be at most 100 characters")
           .optional(),
       ),
-      registrationNumber: z
-        .string()
-        .trim()
-        .min(1, "Registration number is required")
-        .optional(),
+
+      registrationNumber: z.preprocess(
+        emptyStringToUndefined,
+        z.string().trim().min(1).optional(),
+      ),
+
       experience: z.preprocess(
         emptyStringToUndefined,
         z.coerce
@@ -250,11 +309,13 @@ export const updateDoctorServerZodSchema = z.object({
           .nonnegative("Experience cannot be negative")
           .optional(),
       ),
+
       gender: z
         .enum([Gender.MALE, Gender.FEMALE], {
           message: "Gender must be either MALE or FEMALE",
         })
         .optional(),
+
       appointmentFee: z.preprocess(
         emptyStringToUndefined,
         z.coerce
@@ -262,35 +323,48 @@ export const updateDoctorServerZodSchema = z.object({
           .nonnegative("Appointment fee cannot be negative")
           .optional(),
       ),
-      qualification: z
-        .string()
-        .trim()
-        .min(2, "Qualification must be at least 2 characters")
-        .max(50, "Qualification must be at most 50 characters")
-        .optional(),
-      currentWorkingPlace: z
-        .string()
-        .trim()
-        .min(2, "Current working place must be at least 2 characters")
-        .max(50, "Current working place must be at most 50 characters")
-        .optional(),
-      designation: z
-        .string()
-        .trim()
-        .min(2, "Designation must be at least 2 characters")
-        .max(50, "Designation must be at most 50 characters")
-        .optional(),
+
+      qualification: z.preprocess(
+        emptyStringToUndefined,
+        z
+          .string()
+          .trim()
+          .min(5, "Qualification must be at least 5 characters")
+          .max(50, "Qualification must be at most 50 characters")
+          .optional(),
+      ),
+
+      currentWorkingPlace: z.preprocess(
+        emptyStringToUndefined,
+        z
+          .string()
+          .trim()
+          .min(5, "Current working place must be at least 5 characters")
+          .max(50, "Current working place must be at most 50 characters")
+          .optional(),
+      ),
+
+      designation: z.preprocess(
+        emptyStringToUndefined,
+        z
+          .string()
+          .trim()
+          .min(2, "Designation must be at least 2 characters")
+          .max(50, "Designation must be at most 50 characters")
+          .optional(),
+      ),
     })
     .optional(),
+
   specialties: z
     .array(
       z.object({
-        specialtyId: z.uuid("Specialty ID must be a valid UUID"),
-        shouldDelete: z.boolean("shouldDelete must be a boolean").optional(),
+        specialtyId: z.uuid("Each id must be a valid uuid"),
       }),
     )
     .optional(),
 }) satisfies z.ZodType<IUpdateDoctorPayload>;
 
 export type ICreateDoctorFormValues = z.infer<typeof createDoctorFormZodSchema>;
+
 export type IEditDoctorFormValues = z.infer<typeof editDoctorFormZodSchema>;

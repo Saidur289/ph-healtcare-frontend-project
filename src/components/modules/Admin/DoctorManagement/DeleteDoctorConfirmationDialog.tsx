@@ -38,12 +38,12 @@ const DeleteDoctorConfirmationDialog = ({
       return;
     }
     const result = await mutateAsync(String(doctor.id));
-    console.log("running mutateAsync*****************");
+
     if (!result.success) {
       toast.error(result.message || "Failed to delete doctor");
       return;
     }
-    console.log("return response***************************************");
+
     toast.success(result.message || "Doctor deleted successfully");
     onOpenChange(false);
     void queryClient.invalidateQueries({ queryKey: ["doctors"] });

@@ -197,11 +197,22 @@ const ViewDoctorProfileDialog = ({
                   <div className="flex flex-wrap gap-2">
                     {doctorDetails.specialties?.length ? (
                       doctorDetails.specialties.map(
-                        (item: IDoctorDetails["specialties"][number]) => (
-                          <Badge key={item.specialty.id} variant="secondary">
-                            {item.specialty.title}
-                          </Badge>
-                        ),
+                        (
+                          item: IDoctorDetails["specialties"][number],
+                          index: number,
+                        ) => {
+                          const specialtyTitle =
+                            item.specialty?.title || item.specialtyId || "N/A";
+                          const specialtyKey =
+                            item.specialty?.id ||
+                            item.specialtyId ||
+                            `specialty-${index}`;
+                          return (
+                            <Badge key={specialtyKey} variant="secondary">
+                              {specialtyTitle}
+                            </Badge>
+                          );
+                        },
                       )
                     ) : (
                       <span className="text-sm text-muted-foreground">

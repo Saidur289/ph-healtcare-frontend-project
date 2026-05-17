@@ -12,7 +12,6 @@ export async function getNewTokenWithRefreshToken(
   better_auth_session_token: string,
 ): Promise<boolean> {
   try {
-    console.log("*******************************************************************beeterrr",better_auth_session_token)
     const res = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
       method: "POST",
       headers: {
