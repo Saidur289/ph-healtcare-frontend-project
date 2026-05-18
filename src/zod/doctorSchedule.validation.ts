@@ -1,7 +1,7 @@
 import {
   ICreateDoctorSchedulePayload,
   IUpdateDoctorSchedulePayload,
-} from "@/types/doctorSchedules.types";
+} from "@/types/doctorSchedule.types";
 import z from "zod";
 
 export const createDoctorsScheduleServerZodSchema = z.object({

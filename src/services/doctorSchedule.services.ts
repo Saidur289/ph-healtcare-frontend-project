@@ -5,9 +5,9 @@ import {
   ICreateDoctorSchedulePayload,
   IDoctorSchedule,
   IUpdateDoctorSchedulePayload,
-} from "@/types/doctorSchedules.types";
+} from "@/types/doctorSchedule.types";
 
-export const getDoctorSchedules = async (queryString: string) => {
+export const getMyDoctorSchedules = async (queryString: string) => {
   try {
     return await httpClient.get<IDoctorSchedule[]>(
       queryString
@@ -36,7 +36,7 @@ export const updateDoctorSchedule = async (
   payload: IUpdateDoctorSchedulePayload,
 ) => {
   try {
-    return await httpClient.patch<IDoctorSchedule[]>(
+    return await httpClient.patch<{ count: number }>(
       "/doctor-schedules/update-my-doctor-schedule",
       payload,
     );
@@ -47,7 +47,7 @@ export const updateDoctorSchedule = async (
 };
 export const deleteDoctorSchedule = async (id: string) => {
   try {
-    return await httpClient.delete<{ count: number }>(
+    return await httpClient.delete<null>(
       `/doctor-schedules/delete-my-doctor-schedule/${id}`,
     );
   } catch (error) {
