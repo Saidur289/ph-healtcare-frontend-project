@@ -269,7 +269,7 @@ const DoctorsList = ({
             initialValue={searchTermFromUrl}
             placeholder="Search doctor by name, qualification, email..."
             debounceMs={700}
-            onDebouncedChange={handleDebouncedSearchChange}
+            onDebounceChange={handleDebouncedSearchChange}
             isLoading={isBusy}
           />
 

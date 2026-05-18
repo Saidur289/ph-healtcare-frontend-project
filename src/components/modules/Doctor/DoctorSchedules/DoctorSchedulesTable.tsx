@@ -152,7 +152,7 @@ const DoctorSchedulesTable = ({
               initialValue: searchTermFromUrl,
               placeholder: "Search by doctor id, schedule id...",
               debounceMs: 700,
-              onDebouncedChange: handleDebouncedSearchChange,
+              onDebounceChange: handleDebouncedSearchChange,
             }}
             filters={{
               configs: filterConfigs,
