@@ -20,6 +20,7 @@ const CONSULTATION_ALLOWED_QUERY_KEYS = new Set([
   SPECIALTIES_FILTER_KEY,
   `${APPOINTMENT_FEE_FILTER_KEY}[gte]`,
   `${APPOINTMENT_FEE_FILTER_KEY}[lte]`,
+  "averageRating[gte]",
 ]);
 
 const ConsultationPage = async ({

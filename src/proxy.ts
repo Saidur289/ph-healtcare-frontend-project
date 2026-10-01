@@ -102,8 +102,16 @@ export async function proxy(request: NextRequest) {
       | undefined;
     const dashboard = isLoggedIn ? getDefaultDashboardRoute(role as UserRole) : "/";
 
+    // the page guard (lib/requireUser.ts) found the session dead even though the JWT
+    // still verifies: drop the cookies and show the login form
+    const sessionRejected = pathname === "/login" && request.nextUrl.searchParams.get("expired") === "1";
+    if (sessionRejected) {
+      refreshedCookies = [];
+      clearCookies = true;
+    }
+
     let response: NextResponse;
-    if (isLoggedIn && isAuthRoutes(pathname)) {
+    if (isLoggedIn && isAuthRoutes(pathname) && !sessionRejected) {
       // 2. logged-in users don't need /login, /register, /forgot-password
       response = NextResponse.redirect(new URL(dashboard, request.url));
     } else if (!isProtected) {

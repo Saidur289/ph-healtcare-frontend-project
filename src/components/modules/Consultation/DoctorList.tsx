@@ -6,8 +6,10 @@ import DataTableFilters, {
 } from "@/components/shared/table/DataTableFilters";
 import DataTableSearch from "@/components/shared/table/DataTableSearch";
 import BookAppointmentModal from "@/components/modules/Patient/Appointments/BookAppointmentModal";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import DoctorCard from "@/components/modules/Public/DoctorCard";
+import EmptyState from "@/components/shared/EmptyState";
+import { Skeleton } from "@/components/ui/skeleton";
+import { SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -26,7 +28,6 @@ import { getAllSpecialties, getDoctors } from "@/services/doctor.services";
 import { type IDoctors } from "@/types/doctor.types";
 import { type ISpecialty } from "@/types/specialty.types";
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 
@@ -34,6 +35,8 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 12;
 const SPECIALTIES_FILTER_KEY = "specialties.specialty.title";
 const APPOINTMENT_FEE_FILTER_KEY = "appointmentFee";
+const MIN_RATING_FILTER_ID = "minRating";
+const MIN_RATING_QUERY_KEY = "averageRating[gte]";
 const CONSULTATION_ALLOWED_QUERY_KEYS = new Set([
   "page",
   "limit",
@@ -44,12 +47,14 @@ const CONSULTATION_ALLOWED_QUERY_KEYS = new Set([
   SPECIALTIES_FILTER_KEY,
   `${APPOINTMENT_FEE_FILTER_KEY}[gte]`,
   `${APPOINTMENT_FEE_FILTER_KEY}[lte]`,
+  MIN_RATING_QUERY_KEY,
 ]);
 
 const CONSULTATION_FILTER_DEFINITIONS = [
   serverManagedFilter.single("gender"),
   serverManagedFilter.multi(SPECIALTIES_FILTER_KEY),
   serverManagedFilter.range(APPOINTMENT_FEE_FILTER_KEY),
+  serverManagedFilter.single(MIN_RATING_FILTER_ID, MIN_RATING_QUERY_KEY),
 ];
 
 const getSanitizedConsultationQueryString = (queryString: string) => {
@@ -75,14 +80,6 @@ const getSanitizedConsultationQueryString = (queryString: string) => {
   });
 
   return sanitizedParams.toString();
-};
-
-const getDoctorInitials = (name: string) => {
-  const parts = name.trim().split(/\s+/);
-  const initials = parts
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "");
-  return initials.join("") || "DR";
 };
 
 const Pagination = ({
@@ -216,7 +213,6 @@ const DoctorsList = ({
         options: [
           { label: "Male", value: "MALE" },
           { label: "Female", value: "FEMALE" },
-          { label: "Other", value: "OTHER" },
         ],
       },
       {
@@ -233,6 +229,16 @@ const DoctorsList = ({
         label: "Fee Range",
         type: "range",
       },
+      {
+        id: MIN_RATING_FILTER_ID,
+        label: "Rating",
+        type: "single-select",
+        options: [
+          { label: "4.5 and up", value: "4.5" },
+          { label: "4 and up", value: "4" },
+          { label: "3 and up", value: "3" },
+        ],
+      },
     ];
   }, [specialties]);
 
@@ -241,33 +247,27 @@ const DoctorsList = ({
       gender: filterValues.gender,
       [SPECIALTIES_FILTER_KEY]: filterValues[SPECIALTIES_FILTER_KEY],
       [APPOINTMENT_FEE_FILTER_KEY]: filterValues[APPOINTMENT_FEE_FILTER_KEY],
+      [MIN_RATING_FILTER_ID]: filterValues[MIN_RATING_FILTER_ID],
     };
   }, [filterValues]);
 
   const isBusy = isLoading || isFetching || isRouteRefreshPending;
 
   return (
-    <section className="space-y-6 pb-8">
-      <div className="relative overflow-hidden rounded-2xl border bg-linear-to-br from-cyan-50 via-white to-blue-50 p-6">
-        <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-blue-200/30 blur-2xl" />
-        <div className="absolute -bottom-10 -left-10 h-36 w-36 rounded-full bg-cyan-200/30 blur-2xl" />
-        <div className="relative space-y-3">
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            Consult With Our Specialists
-          </h1>
-          <p className="max-w-3xl text-sm text-muted-foreground sm:text-base">
-            Discover trusted doctors, compare experience and fees, and open
-            detailed profiles to find the right specialist.
-          </p>
-        </div>
+    <section className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Find a doctor</h1>
+        <p className="mt-1 text-[13px] text-muted-foreground">
+          Compare specialists by fee, experience and rating, then book a video consultation.
+        </p>
       </div>
 
-      <div className="rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
+      <div className="rounded-xl border bg-card p-4 shadow-xs sm:p-5">
         <div className="flex flex-wrap items-start gap-3">
           <DataTableSearch
             key={searchTermFromUrl}
             initialValue={searchTermFromUrl}
-            placeholder="Search doctor by name, qualification, email..."
+            placeholder="Search by name, specialty or hospital…"
             debounceMs={700}
             onDebounceChange={handleDebouncedSearchChange}
             isLoading={isBusy}
@@ -323,102 +323,45 @@ const DoctorsList = ({
       </div>
 
       {isBusy && (
-        <div className="rounded-md border p-4 text-sm text-muted-foreground">
-          Loading doctors...
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3" aria-busy="true" aria-label="Loading doctors">
+          {Array.from({ length: 6 }, (_, i) => (
+            <Skeleton key={i} className="h-64 rounded-xl" />
+          ))}
         </div>
       )}
 
       {!isBusy && doctors.length === 0 && (
-        <div className="rounded-md border p-6 text-center text-sm text-muted-foreground">
-          No doctors found for your current search/filter.
-        </div>
+        <EmptyState
+          icon={SearchX}
+          title="No doctors match your search"
+          description="Try another name or specialty, or clear the filters."
+          action={
+            <Button variant="outline" size="sm" onClick={clearAllFilters}>
+              Clear filters
+            </Button>
+          }
+        />
       )}
 
       {!isBusy && doctors.length > 0 && (
         <>
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {doctors.map((doctor: IDoctors) => {
-              const specialtiesList =
-                doctor.specialties?.map((item) => item.specialty.title) ?? [];
-
-              return (
-                <article
-                  key={String(doctor.id)}
-                  className="group relative flex h-full flex-col overflow-hidden rounded-2xl border bg-card p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-                >
-                  <div className="pointer-events-none absolute left-0 top-0 h-1 w-full bg-linear-to-r from-cyan-500 via-sky-500 to-blue-500 opacity-80" />
-                  <div className="flex items-start gap-3">
-                    <Avatar className="size-14 ring-2 ring-blue-100">
-                      <AvatarImage
-                        src={doctor.profilePhoto}
-                        alt={doctor.name}
-                      />
-                      <AvatarFallback>
-                        {getDoctorInitials(doctor.name)}
-                      </AvatarFallback>
-                    </Avatar>
-
-                    <div className="min-w-0 space-y-1">
-                      <h3 className="truncate text-base font-semibold">
-                        {doctor.name}
-                      </h3>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {doctor.designation || "N/A"}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {doctor.currentWorkingPlace || "N/A"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid gap-2 rounded-lg bg-muted/40 p-3 text-sm">
-                    <p>
-                      <span className="font-medium">Experience:</span>{" "}
-                      {doctor.experience ?? 0} years
-                    </p>
-                    <p>
-                      <span className="font-medium">Fee:</span> $
-                      {doctor.appointmentFee?.toFixed(2) ?? "N/A"}
-                    </p>
-                    <p>
-                      <span className="font-medium">Rating:</span>{" "}
-                      {doctor.averageRating?.toFixed(1) ?? "0.0"}
-                    </p>
-                  </div>
-
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {specialtiesList.length > 0 ? (
-                      specialtiesList.slice(0, 3).map((title) => (
-                        <Badge
-                          key={`${doctor.id}-${title}`}
-                          variant="secondary"
-                        >
-                          {title}
-                        </Badge>
-                      ))
-                    ) : (
-                      <Badge variant="secondary">No specialties</Badge>
-                    )}
-                  </div>
-
-                  <div className="mt-auto grid gap-2 pt-5 sm:grid-cols-2">
-                    <BookAppointmentModal
-                      doctorId={String(doctor.id)}
-                      doctorName={doctor.name}
-                      isAuthenticated={isAuthenticated}
-                      viewerRole={viewerRole}
-                      triggerClassName="w-full"
-                      fullWidth
-                    />
-                    <Button asChild className="w-full">
-                      <Link href={`/consultation/doctor/${doctor.id}`}>
-                        View Details
-                      </Link>
-                    </Button>
-                  </div>
-                </article>
-              );
-            })}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {doctors.map((doctor: IDoctors) => (
+              <DoctorCard
+                key={String(doctor.id)}
+                doctor={doctor}
+                action={
+                  <BookAppointmentModal
+                    doctorId={String(doctor.id)}
+                    doctorName={doctor.name}
+                    isAuthenticated={isAuthenticated}
+                    viewerRole={viewerRole}
+                    triggerClassName="w-full"
+                    fullWidth
+                  />
+                }
+              />
+            ))}
           </div>
 
           <div className="space-y-3 pt-2">

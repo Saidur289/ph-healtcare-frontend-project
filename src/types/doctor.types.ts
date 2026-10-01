@@ -1,7 +1,7 @@
+// same values as the API (server/prisma/schema/enums.prisma)
 export enum Gender {
   MALE = "MALE",
   FEMALE = "FEMALE",
-  OTHER = "OTHER",
 }
 
 export enum UserStatus {
@@ -114,6 +114,9 @@ export interface IDoctors {
   designation: string;
 
   averageRating: number;
+  reviewCount?: number;
+  // doctor's "Available" toggle
+  isAvailable?: boolean;
 
   createdAt: Date;
 

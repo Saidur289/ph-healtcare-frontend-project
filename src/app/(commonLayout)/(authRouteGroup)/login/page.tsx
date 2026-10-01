@@ -5,6 +5,7 @@ interface LoginParams {
     redirect?: string;
     verified?: string;
     reset?: string;
+    expired?: string;
     error?: string;
     email?: string;
   }>;
@@ -24,7 +25,9 @@ const LoginPage = async ({ searchParams }: LoginParams) => {
       ? "Your email is verified. Please log in."
       : param.reset === "1"
         ? "Your password was reset. Please log in with your new password."
-        : undefined;
+        : param.expired === "1"
+          ? "Your session has ended. Please log in again."
+          : undefined;
   const error = param.error
     ? (OAUTH_ERRORS[param.error] ?? "Login failed. Please try again.")
     : undefined;
