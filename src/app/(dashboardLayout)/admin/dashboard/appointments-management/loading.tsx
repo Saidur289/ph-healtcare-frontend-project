@@ -1,4 +1,5 @@
-export default function AppointmentsLoading() {
-  // Or a custom loading skeleton component
-  return <p>Loading Appointments...</p>;
+import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
+
+export default function Loading() {
+  return <DashboardSkeleton cards={0} rows={8} />;
 }

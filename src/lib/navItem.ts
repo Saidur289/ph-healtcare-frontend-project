@@ -143,7 +143,7 @@ export const patientNavItems: NavSection[] = [
         // booking starts by choosing a doctor and a free slot
         title: "Book Appointment",
         href: "/consultation",
-        icon: "Calendar",
+        icon: "CalendarPlus",
       },
     ],
   },

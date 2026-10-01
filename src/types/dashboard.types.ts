@@ -27,3 +27,37 @@ export interface IAdminDashboardData {
   pieChartData: PieChartData[];
   barChartData: BarChartData[];
 }
+export interface IStatusCount {
+  status: string;
+  count: number;
+}
+export interface IDoctorDashboardData {
+  reviewCount: number;
+  averageRating: number;
+  isAvailable: boolean;
+  patientCount: number;
+  newPatientsToday: number;
+  appointmentCount: number;
+  todayAppointmentCount: number;
+  yesterdayAppointmentCount: number;
+  totalRevenue: number;
+  todayRevenue: number;
+  yesterdayRevenue: number;
+  appointmentStatusDistribution: IStatusCount[];
+}
+export interface IPatientDashboardData {
+  appointmentCount: number;
+  reviewCount: number;
+  prescriptionCount: number;
+  upcomingCount: number;
+  totalPaid: number;
+  appointmentStatusDistribution: IStatusCount[];
+}
+export interface IDashboardNotice {
+  id: string;
+  kind: "call" | "payment";
+  title: string;
+  message: string;
+  at: string;
+  href: string;
+}

@@ -25,7 +25,7 @@ interface AppointmentBarChartProps {
 const AppointmentBarChart = ({ data }: AppointmentBarChartProps) => {
   if (!data || !Array.isArray(data)) {
     return (
-      <Card className="col-span-4">
+      <Card className="shadow-xs">
         <CardHeader>
           <CardTitle>Appointment Trends</CardTitle>
           <CardDescription>Monthly Appointment Statistics</CardDescription>
@@ -50,7 +50,7 @@ const AppointmentBarChart = ({ data }: AppointmentBarChartProps) => {
     formattedData.every((item) => item.appointments === 0)
   ) {
     return (
-      <Card className="col-span-4">
+      <Card className="shadow-xs">
         <CardHeader>
           <CardTitle>Appointment Trends</CardTitle>
           <CardDescription>Monthly Appointment Statistics</CardDescription>
@@ -62,22 +62,22 @@ const AppointmentBarChart = ({ data }: AppointmentBarChartProps) => {
     );
   }
   return (
-    <Card className="col-span-4">
+    <Card className="shadow-xs">
       <CardHeader>
         <CardTitle>Appointment Trends</CardTitle>
         <CardDescription>Monthly Appointment Statistics</CardDescription>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={350}>
+        <ResponsiveContainer width="100%" height={300}>
           <BarChart data={formattedData}>
-            <CartesianGrid strokeDasharray="3 3" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
             <XAxis tickLine={false} axisLine={false} dataKey="month" />
             <YAxis tickLine={false} axisLine={false} allowDecimals={false} />
             <Tooltip />
             <Legend />
             <Bar
               dataKey="appointments"
-              fill="oklch(0.646 0.222 41.116)"
+              fill="#1565D8"
               radius={[4, 4, 0, 0]}
               maxBarSize={60}
             />

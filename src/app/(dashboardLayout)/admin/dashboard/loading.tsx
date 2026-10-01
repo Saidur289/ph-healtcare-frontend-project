@@ -1,4 +1,5 @@
-export default function AdminDashboardLoading() {
-  // Or a custom loading skeleton component
-  return <p>Loading Admin Dashboard...</p>;
+import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
+
+export default function Loading() {
+  return <DashboardSkeleton />;
 }

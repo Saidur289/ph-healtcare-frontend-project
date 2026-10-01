@@ -1,13 +1,16 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { NavSection } from "@/types/dashboard.types";
 import { UserInfo } from "@/types/user.types";
-import { Menu, Search } from "lucide-react";
-import { useEffect, useState } from "react";
-import DashboardMobileSidebar from "./DashboardMobileSidebar";
-import { Input } from "@/components/ui/input";
+import { Menu, Plus, Search } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { FormEvent, useState } from "react";
+import AvailabilityToggle from "./AvailabilityToggle";
 import NotificationDropdown from "./NotificationDropdown";
+import SidebarNav from "./SidebarNav";
+import ThemeToggle from "./ThemeToggle";
 import UserDropdown from "./UserDropdown";
 
 interface DashboardNavbarProps {
@@ -16,55 +19,87 @@ interface DashboardNavbarProps {
   dashboardHome: string;
 }
 
-const DashboardNavbarContent = ({
-  dashboardHome,
-  navItems,
-  userInfo,
-}: DashboardNavbarProps) => {
+type TRoleActions = { search: string; placeholder: string; action: { label: string; href: string } };
+
+const ADMIN_ACTIONS: TRoleActions = {
+  search: "/admin/dashboard/doctors-management",
+  placeholder: "Search doctors…",
+  action: { label: "Add Doctor", href: "/admin/dashboard/doctors-management" },
+};
+
+// what the search box searches and what the blue "+" button does, per role
+const ROLE_ACTIONS: Record<string, TRoleActions> = {
+  DOCTOR: {
+    search: "/doctor/dashboard/appointments",
+    placeholder: "Search patients, appointments…",
+    action: { label: "Add Schedule", href: "/doctor/dashboard/my-schedules" },
+  },
+  PATIENT: {
+    search: "/consultation",
+    placeholder: "Search doctors or specialties…",
+    action: { label: "Book Appointment", href: "/consultation" },
+  },
+  ADMIN: ADMIN_ACTIONS,
+  SUPER_ADMIN: ADMIN_ACTIONS,
+};
+
+const DashboardNavbarContent = ({ dashboardHome, navItems, userInfo }: DashboardNavbarProps) => {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const checkSmallerScreen = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    checkSmallerScreen();
-    window.addEventListener("resize", checkSmallerScreen);
-    return () => {
-      window.removeEventListener("resize", checkSmallerScreen);
-    };
-  }, []);
+  const [term, setTerm] = useState("");
+  const roleActions = ROLE_ACTIONS[userInfo.role] ?? ROLE_ACTIONS.PATIENT;
+
+  const search = (event: FormEvent) => {
+    event.preventDefault();
+    const value = term.trim().slice(0, 100);
+    router.push(value ? `${roleActions.search}?searchTerm=${encodeURIComponent(value)}` : roleActions.search);
+  };
+
   return (
-    <div className="flex items-center gap-4 w-full px-4 py-3 border-b bg-background">
-      {/* Mobile menu Toggle button menu */}
-      <Sheet open={isOpen && isMobile} onOpenChange={setIsOpen}>
-        <SheetTrigger asChild className="md:hidden">
-          <Button variant={"outline"} size={"icon"}>
+    <header className="flex h-16 shrink-0 items-center gap-3 border-b bg-card px-4 md:px-6">
+      {/* mobile: the sidebar becomes a drawer */}
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <SheetTrigger asChild>
+          <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open navigation">
             <Menu className="h-5 w-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-64 p-0">
-          <DashboardMobileSidebar
-            navItems={navItems}
-            userInfo={userInfo}
-            dashboardHome={dashboardHome}
-          />
+        <SheetContent side="left" className="w-64 border-none p-0">
+          <SheetTitle className="sr-only">Navigation</SheetTitle>
+          <SheetDescription className="sr-only">Dashboard pages</SheetDescription>
+          <SidebarNav navItems={navItems} dashboardHome={dashboardHome} onNavigate={() => setIsOpen(false)} />
         </SheetContent>
       </Sheet>
-      {/* search component */}
-      <div className="flex-1 flex  items-baseline">
-        <div className="relative w-full hidden sm:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input type="text" placeholder="Search....." className="pl-9 pr-4" />
-        </div>
-      </div>
-      {/* right side actions */}
-      <div className="flex items-center gap-2">
-        {/* Notifications */}
+
+      <form role="search" onSubmit={search} className="relative hidden max-w-md flex-1 sm:block">
+        <Search
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+          aria-hidden
+        />
+        <input
+          type="search"
+          value={term}
+          onChange={(e) => setTerm(e.target.value)}
+          maxLength={100}
+          placeholder={roleActions.placeholder}
+          aria-label="Search"
+          className="h-9 w-full rounded-full border border-transparent bg-muted pl-9 pr-4 text-[13px] outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:bg-card"
+        />
+      </form>
+
+      <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+        {userInfo.role === "DOCTOR" && <AvailabilityToggle initial={userInfo.Doctor?.isAvailable ?? true} />}
+        <Button asChild size="sm" className="hidden rounded-lg md:inline-flex">
+          <Link href={roleActions.action.href}>
+            <Plus className="h-4 w-4" aria-hidden />
+            {roleActions.action.label}
+          </Link>
+        </Button>
+        <ThemeToggle />
         <NotificationDropdown />
-        {/* user dropdown */}
         <UserDropdown userInfo={userInfo} />
       </div>
-    </div>
+    </header>
   );
 };
 

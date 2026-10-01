@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { QueryProviders } from "@/providers/QueryProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/providers/ThemeProvider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Inter-like sans from the design (variable font, self-hosted by next/font)
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -27,13 +30,17 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      // next-themes sets the theme class before React hydrates
+      suppressHydrationWarning
+      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <QueryProviders>
-          {children}
-          <Toaster />
-        </QueryProviders>
+      <body className="min-h-full flex flex-col bg-background text-foreground text-sm">
+        <ThemeProvider>
+          <QueryProviders>
+            {children}
+            <Toaster />
+          </QueryProviders>
+        </ThemeProvider>
       </body>
     </html>
   );

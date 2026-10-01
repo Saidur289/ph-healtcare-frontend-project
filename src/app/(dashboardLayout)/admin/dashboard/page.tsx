@@ -1,31 +1,30 @@
 import AdminDashboardContent from "@/components/modules/Dashboard/AdminDashboardContent";
+import DashboardGreeting from "@/components/modules/Dashboard/DashboardGreeting";
+import { queryKeys } from "@/lib/queryKeys";
+import { getUserInfo } from "@/services/auth.service";
 import { getDashboardData } from "@/services/dashboard.service";
-import { ApiResponse } from "@/types/api.types";
 import { IAdminDashboardData } from "@/types/dashboard.types";
-import {
-  dehydrate,
-  HydrationBoundary,
-  QueryClient,
-} from "@tanstack/react-query";
+import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 
-const AdminDashboardLayoutPage = async () => {
+const AdminDashboardPage = async () => {
   const queryClient = new QueryClient();
-  await queryClient.prefetchQuery({
-    queryKey: ["admin-dashboard-data"],
-    queryFn: getDashboardData,
-    staleTime: 30 * 1000, // 30 seconds data stays fresh if this data access is less than 30 seconds it will use cached data it will not make request
-
-    gcTime: 5 * 60 * 1000, // 5 minutes garbage collection after this time  remove the cached and make new memory
-  });
-  const dashboardData = queryClient.getQueryData([
-    "admin-dashboard-data",
-  ]) as ApiResponse<IAdminDashboardData>;
+  const [user] = await Promise.all([
+    getUserInfo(),
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.adminDashboard,
+      queryFn: () => getDashboardData<IAdminDashboardData>(),
+      staleTime: 30 * 1000,
+    }),
+  ]);
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <AdminDashboardContent />
-    </HydrationBoundary>
+    <div className="space-y-6">
+      <DashboardGreeting name={user?.name ?? "Admin"} />
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <AdminDashboardContent />
+      </HydrationBoundary>
+    </div>
   );
 };
 
-export default AdminDashboardLayoutPage;
+export default AdminDashboardPage;

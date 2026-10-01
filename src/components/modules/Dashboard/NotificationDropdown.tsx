@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
+import { getNotificationsAction } from "@/app/_actions/dashboard.actions";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,145 +10,78 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { formatDistanceToNow } from "date-fns";
-import { Bell, Calendar, CheckCircle, Clock, UserPlus } from "lucide-react";
+import { queryKeys } from "@/lib/queryKeys";
+import { IDashboardNotice } from "@/types/dashboard.types";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { Bell, CreditCard, Loader2, Video } from "lucide-react";
+import Link from "next/link";
 
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: "appointment" | "schedule" | "system" | "user";
-  timestamp: Date;
-  read: boolean;
-}
-const MOCK_NOTIFICATIONS: Notification[] = [
-  {
-    id: "1",
-    title: "New Appointment Scheduled",
-    message:
-      "You have a new appointment scheduled with John Doe on 2024-06-15 at 10:00 AM.",
-    type: "appointment",
-    timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-    read: false,
-  },
+const NoticeIcon = ({ kind }: { kind: IDashboardNotice["kind"] }) =>
+  kind === "call" ? (
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-info-soft text-primary">
+      <Video className="h-4 w-4" aria-hidden />
+    </span>
+  ) : (
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-warning-soft text-warning">
+      <CreditCard className="h-4 w-4" aria-hidden />
+    </span>
+  );
 
-  {
-    id: "2",
-    title: "Schedule Updated",
-    message: "Your schedule has been updated for the week of 2024-06-17.",
-    type: "schedule",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60), // 1 hour ago
-    read: true,
-  },
-
-  {
-    id: "3",
-    title: "System Maintenance",
-    message:
-      "The system will undergo maintenance on 2024-06-20 from 1:00 AM to 3:00 AM.",
-    type: "system",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-    read: false,
-  },
-
-  {
-    id: "4",
-    title: "New User Registered",
-    message: "A new user, Jane Smith, has registered on the platform.",
-    type: "user",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48), // 2 days ago
-    read: true,
-  },
-];
-const getNotificationsIcon = (type: Notification["type"]) => {
-  switch (type) {
-    case "appointment":
-      return <Calendar className="h-4 w-4 text-blue-600" />;
-    case "schedule":
-      return <Clock className="h-4 w-4 text-amber-600" />;
-    case "system":
-      return <CheckCircle className="h-4 w-4 text-purple-600" />;
-    case "user":
-      return <UserPlus className="h-4 w-4 text-green-600" />;
-    default:
-      return <Bell className="h-4 w-4 text-gray-600" />;
-  }
-};
-
+// loaded in the background so it never slows the page down
 const NotificationDropdown = () => {
-  const unreadCount = MOCK_NOTIFICATIONS.filter(
-    (notification) => !notification.read,
-  ).length;
+  const { data: notices = [], isLoading } = useQuery({
+    queryKey: queryKeys.notifications,
+    queryFn: () => getNotificationsAction(),
+    staleTime: 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
+  });
+  const count = notices.length;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={"outline"} size={"icon"} className="relative">
-          <Bell className="h-5 w-5" />
-          <Badge
-            className="absolute -top-1 h-5 w-5 -right-1 rounded-full p-0 flex items-center justify-center"
-            variant="destructive"
-          >
-            <span className="text-[10px]">
-              {unreadCount > 9 ? "9+" : unreadCount}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative rounded-full"
+          aria-label={count ? `Notifications (${count})` : "Notifications"}
+        >
+          <Bell className="h-4 w-4" />
+          {count > 0 && (
+            <span className="pointer-events-none absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold leading-none text-white ring-2 ring-card">
+              {count > 9 ? "9+" : count}
             </span>
-          </Badge>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
-        <DropdownMenuLabel>
-          <div className="flex items-center justify-center">
-            <span>Notifications</span>
-            {unreadCount > 0 && (
-              <Badge variant="secondary" className="ml-2">
-                {unreadCount} now
-              </Badge>
-            )}
+        <DropdownMenuLabel className="text-sm">Notifications</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {isLoading ? (
+          <div className="flex justify-center p-6 text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" aria-label="Loading" />
           </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <ScrollArea className="h-75">
-          {MOCK_NOTIFICATIONS.length > 0 ? (
-            MOCK_NOTIFICATIONS.map((notification) => (
-              <DropdownMenuItem
-                key={notification.id}
-                className="flex flex-col items-start gap-2 p-3 cursor-pointer"
-              >
-                <div className="mt-0.5">
-                  {getNotificationsIcon(notification.type)}
-                </div>
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center justify-center">
-                    <p className="text-sm font-medium leading-none">
-                      {notification.title}
-                    </p>
-                    {!notification.read && (
-                      <div className="h-2 w-2 rounded-full bg-blue-600"></div>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2">
-                    {notification.message}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(notification.timestamp, {
-                      addSuffix: true,
-                    })}
-                  </p>
-                </div>
+        ) : count === 0 ? (
+          <p className="p-6 text-center text-sm text-muted-foreground">You&apos;re all caught up.</p>
+        ) : (
+          <div className="max-h-80 overflow-y-auto">
+            {notices.map((notice) => (
+              <DropdownMenuItem key={notice.id} asChild className="cursor-pointer items-start gap-3 p-3">
+                <Link href={notice.href}>
+                  <NoticeIcon kind={notice.kind} />
+                  <span className="min-w-0 flex-1 space-y-0.5">
+                    <span className="block text-sm font-medium">{notice.title}</span>
+                    <span className="block text-xs text-muted-foreground">{notice.message}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      {format(new Date(notice.at), "EEE, MMM d • hh:mm a")}
+                    </span>
+                  </span>
+                </Link>
               </DropdownMenuItem>
-            ))
-          ) : (
-            <DropdownMenuLabel>
-              <div className="p-6 text-center text-sm text-muted-foreground">
-                <span>No notifications</span>
-              </div>
-            </DropdownMenuLabel>
-          )}
-        </ScrollArea>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-center justify-center cursor-pointer">
-          View All Notifications
-        </DropdownMenuItem>
+            ))}
+          </div>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

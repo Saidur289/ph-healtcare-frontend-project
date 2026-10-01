@@ -1,4 +1,5 @@
-export default function DoctorSpecialtiesLoading() {
-  // Or a custom loading skeleton component
-  return <p>Loading Doctor Specialties...</p>;
+import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
+
+export default function Loading() {
+  return <DashboardSkeleton cards={0} rows={8} />;
 }

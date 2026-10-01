@@ -22,7 +22,14 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  ChevronRight,
+  MoreVertical,
+} from "lucide-react";
+import Link from "next/link";
 import DataTableFilters, {
   DataTableFilterConfig,
   DataTableFilterValue,
@@ -40,6 +47,11 @@ interface DataTableActions<TData> {
 }
 interface DataTableProps<TData> {
   data: TData[];
+  // card header from the design: "Upcoming Appointments" + "View All >"
+  title?: string;
+  viewAllHref?: string;
+  // inline buttons shown before the ⋮ menu (e.g. "Check In", "Join Now")
+  rowActions?: (data: TData) => React.ReactNode;
   columns: ColumnDef<TData>[];
   actions?: DataTableActions<TData>;
   toolbarAction?: React.ReactNode;
@@ -73,6 +85,9 @@ interface DataTableProps<TData> {
 
 const DataTable = <TData,>({
   data = [] as TData[],
+  title,
+  viewAllHref,
+  rowActions,
   columns,
   actions,
   isLoading,
@@ -90,48 +105,58 @@ const DataTable = <TData,>({
   const hasActions = Boolean(
     actions && (actions.onView || actions.onEdit || actions.onDelete),
   );
-  const tableColumn: ColumnDef<TData>[] = hasActions
-    ? [
-        ...columns,
-        {
-          id: "actions",
-          header: "Actions",
-          enableSorting: false,
-          cell: ({ row }) => {
-            const rawData = row.original;
-            return (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant={"ghost"} className="h-8 w-8 p-0">
-                    <span className="sr-only">Open menu</span>
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {actions?.onView && (
-                    <DropdownMenuItem onClick={() => actions.onView?.(rawData)}>
-                      View
-                    </DropdownMenuItem>
+  const tableColumn: ColumnDef<TData>[] =
+    hasActions || rowActions
+      ? [
+          ...columns,
+          {
+            id: "actions",
+            header: () => <span className="sr-only">Actions</span>,
+            enableSorting: false,
+            cell: ({ row }) => {
+              const rawData = row.original;
+              return (
+                <div className="flex items-center justify-end gap-2">
+                  {rowActions?.(rawData)}
+                  {hasActions && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant={"ghost"} className="h-8 w-8 p-0">
+                          <span className="sr-only">Open row menu</span>
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {actions?.onView && (
+                          <DropdownMenuItem
+                            onClick={() => actions.onView?.(rawData)}
+                          >
+                            View
+                          </DropdownMenuItem>
+                        )}
+                        {actions?.onEdit && (
+                          <DropdownMenuItem
+                            onClick={() => actions.onEdit?.(rawData)}
+                          >
+                            Edit
+                          </DropdownMenuItem>
+                        )}
+                        {actions?.onDelete && (
+                          <DropdownMenuItem
+                            onClick={() => actions.onDelete?.(rawData)}
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   )}
-                  {actions?.onEdit && (
-                    <DropdownMenuItem onClick={() => actions.onEdit?.(rawData)}>
-                      Edit
-                    </DropdownMenuItem>
-                  )}
-                  {actions?.onDelete && (
-                    <DropdownMenuItem
-                      onClick={() => actions.onDelete?.(rawData)}
-                    >
-                      Delete
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            );
+                </div>
+              );
+            },
           },
-        },
-      ]
-    : columns;
+        ]
+      : columns;
   const table = useReactTable({
     data,
     columns: tableColumn,
@@ -167,7 +192,20 @@ const DataTable = <TData,>({
       : undefined,
   });
   return (
-    <div className="relative">
+    <div className="relative overflow-hidden rounded-xl border bg-card shadow-xs">
+      {(title || viewAllHref) && (
+        <div className="flex items-center justify-between gap-3 px-5 pt-4">
+          {title && <h2 className="text-[15px] font-semibold">{title}</h2>}
+          {viewAllHref && (
+            <Link
+              href={viewAllHref}
+              className="flex items-center gap-0.5 text-[13px] font-medium text-primary hover:underline"
+            >
+              View All <ChevronRight className="h-4 w-4" aria-hidden />
+            </Link>
+          )}
+        </div>
+      )}
       {showLoadingOverlay && (
         <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
           <div className="flex items-center gap-2">
@@ -177,7 +215,7 @@ const DataTable = <TData,>({
         </div>
       )}
       {(search || filters || toolbarAction) && (
-        <div className="mb-4 flex flex-wrap items-start gap-3">
+        <div className="flex flex-wrap items-start gap-3 px-5 pt-4">
           {search && (
             <DataTableSearch
               key={search.initialValue ?? ""}
@@ -202,13 +240,16 @@ const DataTable = <TData,>({
           )}
         </div>
       )}
-      <div className="rounded-lg border">
+      <div className={title || viewAllHref || search || filters || toolbarAction ? "mt-4" : undefined}>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
-              <TableRow key={hg.id}>
+              <TableRow key={hg.id} className="bg-muted/60 hover:bg-muted/60">
                 {hg.headers.map((header) => (
-                  <TableHead key={header.id}>
+                  <TableHead
+                    key={header.id}
+                    className="h-10 px-5 text-xs font-medium text-muted-foreground"
+                  >
                     {header.isPlaceholder ? null : header.column.getCanSort() ? (
                       <Button
                         variant={"ghost"}
@@ -243,7 +284,7 @@ const DataTable = <TData,>({
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="px-5 py-3">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
@@ -255,10 +296,10 @@ const DataTable = <TData,>({
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
+                  colSpan={tableColumn.length}
+                  className="h-28 text-center text-muted-foreground"
                 >
-                  {emptyMessage || "No Doctor found."}
+                  {emptyMessage || "Nothing here yet."}
                 </TableCell>
               </TableRow>
             )}

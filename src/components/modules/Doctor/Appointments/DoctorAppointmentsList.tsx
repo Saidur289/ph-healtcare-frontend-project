@@ -9,17 +9,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useNow } from "@/hooks/useNow";
+import { isJoinable } from "@/lib/appointmentUtils";
 import { toast } from "sonner";
-
-const OPENS_BEFORE_MS = 10 * 60 * 1000; // same rule as the API
-
-const isJoinable = (a: IAppointment, now: number) => {
-  if (a.paymentStatus !== "PAID") return false;
-  if (a.status !== "SCHEDULED" && a.status !== "INPROGRESS") return false;
-  const start = new Date(a.schedule?.startDateTime ?? 0).getTime();
-  const end = new Date(a.schedule?.endDateTime ?? 0).getTime();
-  return now >= start - OPENS_BEFORE_MS && now <= end;
-};
 
 const DoctorAppointmentsList = ({ appointments }: { appointments: IAppointment[] }) => {
   const router = useRouter();
