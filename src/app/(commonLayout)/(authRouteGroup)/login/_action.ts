@@ -46,7 +46,8 @@ export const loginAction = async (
             : getDefaultDashboardRoute(role as UserRole);
       }
     }
-  } catch {
+  } catch (error) {
+    console.error("Auth API request failed:", error);
     return { success: false, message: "Could not reach the server. Please try again." };
   }
   // outside try/catch: redirect() works by throwing

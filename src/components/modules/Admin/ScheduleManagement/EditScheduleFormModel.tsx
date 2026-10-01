@@ -85,7 +85,10 @@ const EditScheduleFormModal = ({
 
       const result = await mutateAsync({
         scheduleId: schedule.id ?? "",
-        payload: value,
+        payload: {
+          ...value,
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
       });
 
       if (!result.success) {

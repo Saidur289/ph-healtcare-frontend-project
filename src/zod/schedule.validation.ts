@@ -15,6 +15,8 @@ const baseScheduleSchema = z.object({
   }),
   startTime: z.string().regex(validTimeRegex, "Invalid start time"),
   endTime: z.string().regex(validTimeRegex, "Invalid end time"),
+  // IANA time zone of the admin's browser, e.g. "Asia/Dhaka"; times are stored in UTC
+  timeZone: z.string().min(1).max(64).optional(),
 });
 
 const withScheduleRefinements = <TSchema extends typeof baseScheduleSchema>(

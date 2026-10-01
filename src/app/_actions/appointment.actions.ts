@@ -4,6 +4,7 @@ import {
   bookAppointment,
   bookAppointmentWithPayLater,
   initiateAppointmentPayment,
+  getMySingleAppointment,
 } from "@/services/appointment.services";
 import { type ApiErrorResponse, type ApiResponse } from "@/types/api.types";
 import {
@@ -36,9 +37,42 @@ const getActionErrorMessage = (error: unknown, fallbackMessage: string) => {
   return fallbackMessage;
 };
 
+// keys are random ids generated in the browser (crypto.randomUUID)
+const isValidIdempotencyKey = (key?: string) =>
+  key === undefined || /^[A-Za-z0-9_-]{8,100}$/.test(key);
+
+// used by the payment result page to wait for the Stripe webhook
+export const getAppointmentPaymentStatusAction = async (
+  appointmentId: string,
+): Promise<
+  | { success: true; status: string; paymentStatus: string }
+  | ApiErrorResponse
+> => {
+  if (!/^[0-9a-f-]{36}$/i.test(appointmentId)) {
+    return { success: false, message: "Invalid appointment id" };
+  }
+  try {
+    const result = await getMySingleAppointment(appointmentId);
+    return {
+      success: true,
+      status: String(result.data.status ?? ""),
+      paymentStatus: String(result.data.paymentStatus ?? ""),
+    };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      message: getActionErrorMessage(error, "Could not load the appointment"),
+    };
+  }
+};
+
 export const bookAppointmentAction = async (
   payload: IBookAppointmentPayload,
+  idempotencyKey?: string,
 ): Promise<ApiResponse<IBookAppointmentResult> | ApiErrorResponse> => {
+  if (!isValidIdempotencyKey(idempotencyKey)) {
+    return { success: false, message: "Invalid request id" };
+  }
   const parsedPayload = bookAppointmentServerZodSchema.safeParse(payload);
 
   if (!parsedPayload.success) {
@@ -51,7 +85,7 @@ export const bookAppointmentAction = async (
   }
 
   try {
-    return await bookAppointment(parsedPayload.data);
+    return await bookAppointment(parsedPayload.data, idempotencyKey);
   } catch (error: unknown) {
     return {
       success: false,
@@ -62,7 +96,11 @@ export const bookAppointmentAction = async (
 
 export const bookAppointmentWithPayLaterAction = async (
   payload: IBookAppointmentPayload,
+  idempotencyKey?: string,
 ): Promise<ApiResponse<IBookAppointmentResult> | ApiErrorResponse> => {
+  if (!isValidIdempotencyKey(idempotencyKey)) {
+    return { success: false, message: "Invalid request id" };
+  }
   const parsedPayload = bookAppointmentServerZodSchema.safeParse(payload);
 
   if (!parsedPayload.success) {
@@ -75,7 +113,7 @@ export const bookAppointmentWithPayLaterAction = async (
   }
 
   try {
-    return await bookAppointmentWithPayLater(parsedPayload.data);
+    return await bookAppointmentWithPayLater(parsedPayload.data, idempotencyKey);
   } catch (error: unknown) {
     return {
       success: false,

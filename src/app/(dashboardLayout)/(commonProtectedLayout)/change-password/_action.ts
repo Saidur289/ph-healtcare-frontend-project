@@ -33,7 +33,8 @@ export const changePasswordAction = async (
     }
     // new session + tokens (other devices were logged out by the API)
     await applyAuthCookies(result.setCookies);
-  } catch {
+  } catch (error) {
+    console.error("Auth API request failed:", error);
     return { success: false, message: "Could not reach the server. Please try again." };
   }
   redirect(getDefaultDashboardRoute(user.role as UserRole));

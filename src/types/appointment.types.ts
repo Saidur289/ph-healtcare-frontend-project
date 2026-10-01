@@ -1,10 +1,11 @@
+// same values as the API (server/prisma/schema/enums.prisma)
 export type AppointmentStatus =
   | "SCHEDULED"
-  | "CANCELLED"
-  | "COMPLETED"
   | "INPROGRESS"
-  | string;
-export type PaymentStatus = "PAID" | "UNPAID" | string | "FAILED";
+  | "COMPLETED"
+  | "CANCELED"
+  | "NO_SHOW";
+export type PaymentStatus = "PAID" | "UNPAID" | "EXPIRED" | "REFUNDED";
 export interface IAppointmentDoctor {
   id?: string;
   email?: string;

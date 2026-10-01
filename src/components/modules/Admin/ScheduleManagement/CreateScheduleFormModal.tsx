@@ -45,7 +45,11 @@ const CreateScheduleFormModal = () => {
   const form = useForm({
     defaultValues,
     onSubmit: async ({ value }) => {
-      const result = await mutateAsync(value);
+      // the server converts the typed wall-clock time from this time zone to UTC
+      const result = await mutateAsync({
+        ...value,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      });
 
       if (!result.success) {
         toast.error(result.message || "Failed to create schedules");

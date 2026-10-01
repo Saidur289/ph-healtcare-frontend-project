@@ -21,7 +21,8 @@ export const verifyEmailAction = async (
     if (!result.ok) {
       return { success: false, message: result.message };
     }
-  } catch {
+  } catch (error) {
+    console.error("Auth API request failed:", error);
     return { success: false, message: "Could not reach the server. Please try again." };
   }
   redirect(`/login?verified=1&email=${encodeURIComponent(parsed.data.email)}`);
@@ -37,7 +38,8 @@ export const resendVerificationOtpAction = async (
   try {
     const result = await callAuthApi("resend-verification-otp", parsed.data);
     return { success: result.ok, message: result.message };
-  } catch {
+  } catch (error) {
+    console.error("Auth API request failed:", error);
     return { success: false, message: "Could not reach the server. Please try again." };
   }
 };

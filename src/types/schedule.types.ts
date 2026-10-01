@@ -32,11 +32,13 @@ export interface ISchedule {
   appointments?: IScheduleAppointment[];
 }
 
+// dates "YYYY-MM-DD", times "HH:mm" in timeZone (the admin's browser time zone)
 export interface ICreateSchedulePayload {
   startDate: string;
   endDate: string;
   startTime: string;
   endTime: string;
+  timeZone?: string;
 }
 
 export interface IUpdateSchedulePayload {
@@ -44,4 +46,5 @@ export interface IUpdateSchedulePayload {
   endDate: string;
   startTime: string;
   endTime: string;
+  timeZone?: string;
 }

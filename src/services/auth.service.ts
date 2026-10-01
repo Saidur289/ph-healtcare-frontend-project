@@ -2,6 +2,7 @@
 // should be callable from the browser directly (the page actions call these).
 import { cache } from "react";
 import { cookies } from "next/headers";
+import { unstable_rethrow } from "next/navigation";
 import { UserInfo } from "@/types/user.types";
 import {
   parseSetCookieHeaders,
@@ -76,6 +77,8 @@ export const getUserInfo = cache(async (): Promise<UserInfo | null> => {
     const data = await res.json();
     return data.data ?? null;
   } catch (error) {
+    // let Next.js internal signals (dynamic rendering, redirect) through
+    unstable_rethrow(error);
     console.error("Error in get user info", error);
     return null;
   }

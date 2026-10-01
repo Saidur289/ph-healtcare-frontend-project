@@ -18,7 +18,8 @@ export const forgotPasswordAction = async (
     if (!result.ok) {
       return { success: false, message: result.message };
     }
-  } catch {
+  } catch (error) {
+    console.error("Auth API request failed:", error);
     return { success: false, message: "Could not reach the server. Please try again." };
   }
   redirect(`/reset-password?email=${encodeURIComponent(parsed.data.email)}`);

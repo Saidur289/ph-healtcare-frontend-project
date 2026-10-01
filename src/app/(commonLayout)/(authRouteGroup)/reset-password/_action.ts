@@ -22,7 +22,8 @@ export const resetPasswordAction = async (
     if (!result.ok) {
       return { success: false, message: result.message };
     }
-  } catch {
+  } catch (error) {
+    console.error("Auth API request failed:", error);
     return { success: false, message: "Could not reach the server. Please try again." };
   }
   // the API ended every session; drop any stale cookies on this device too

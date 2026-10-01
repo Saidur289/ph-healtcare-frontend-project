@@ -70,9 +70,10 @@ export const createDoctorFormZodSchema = z.object({
       (value) => !Number.isNaN(Number(value)),
       "Appointment fee must be a number",
     )
+    // whole taka, at least 50 (same rule as the API)
     .refine(
-      (value) => Number(value) >= 0,
-      "Appointment fee cannot be negative",
+      (value) => Number.isInteger(Number(value)) && Number(value) >= 50,
+      "Appointment fee must be a whole number of at least 50",
     ),
 
   qualification: z
@@ -151,7 +152,8 @@ export const createDoctorServerZodSchema = z.object({
 
     appointmentFee: z.coerce
       .number({ error: "Appointment fee must be a number" })
-      .nonnegative("Appointment fee cannot be negative"),
+      .int("Appointment fee must be a whole number")
+      .min(50, "Appointment fee must be at least 50"),
 
     qualification: z
       .string()
@@ -228,9 +230,10 @@ export const editDoctorFormZodSchema = z.object({
       (value) => !Number.isNaN(Number(value)),
       "Appointment fee must be a number",
     )
+    // whole taka, at least 50 (same rule as the API)
     .refine(
-      (value) => Number(value) >= 0,
-      "Appointment fee cannot be negative",
+      (value) => Number.isInteger(Number(value)) && Number(value) >= 50,
+      "Appointment fee must be a whole number of at least 50",
     ),
 
   qualification: z
@@ -317,7 +320,8 @@ export const updateDoctorServerZodSchema = z.object({
         emptyStringToUndefined,
         z.coerce
           .number({ error: "Appointment fee must be a number" })
-          .nonnegative("Appointment fee cannot be negative")
+          .int("Appointment fee must be a whole number")
+          .min(50, "Appointment fee must be at least 50")
           .optional(),
       ),
 

@@ -68,8 +68,9 @@ const PatientAppointmentsList = ({
   const paidCount = appointments.filter(
     (item) => item.paymentStatus === "PAID",
   ).length;
+  // only open payments count as unpaid (EXPIRED / REFUNDED are finished)
   const unpaidCount = appointments.filter(
-    (item) => item.paymentStatus !== "PAID",
+    (item) => item.paymentStatus === "UNPAID" && item.status === "SCHEDULED",
   ).length;
 
   const handlePayNow = async (appointmentId: string) => {
@@ -137,9 +138,10 @@ const PatientAppointmentsList = ({
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {sortedAppointments.map((appointment) => {
+            // the API accepts a payment only for an upcoming, unpaid appointment
             const canPayNow =
-              appointment.paymentStatus !== "PAID" &&
-              appointment.status !== "CANCELED";
+              appointment.paymentStatus === "UNPAID" &&
+              appointment.status === "SCHEDULED";
 
             return (
               <Card key={appointment.id} className="gap-4">

@@ -8,11 +8,20 @@ import {
   IInitiatePaymentResult,
 } from "@/types/appointment.types";
 
-export const bookAppointment = async (payload: IBookAppointmentPayload) => {
+// idempotencyKey: one random id per booking attempt; a retry with the same id
+// returns the same appointment instead of creating a second one
+const idempotencyHeaders = (idempotencyKey?: string) =>
+  idempotencyKey ? { headers: { "Idempotency-Key": idempotencyKey } } : undefined;
+
+export const bookAppointment = async (
+  payload: IBookAppointmentPayload,
+  idempotencyKey?: string,
+) => {
   try {
     return await httpClient.post<IBookAppointmentResult>(
       "/appointments/book-appointment",
       payload,
+      idempotencyHeaders(idempotencyKey),
     );
   } catch (error) {
     console.log("Error booking appointment", error);
@@ -21,11 +30,13 @@ export const bookAppointment = async (payload: IBookAppointmentPayload) => {
 };
 export const bookAppointmentWithPayLater = async (
   payload: IBookAppointmentPayload,
+  idempotencyKey?: string,
 ) => {
   try {
     return await httpClient.post<IBookAppointmentResult>(
       "/appointments/book-appointment-with-pay-later",
       payload,
+      idempotencyHeaders(idempotencyKey),
     );
   } catch (error) {
     console.log("Error booking appointment with pay later", error);

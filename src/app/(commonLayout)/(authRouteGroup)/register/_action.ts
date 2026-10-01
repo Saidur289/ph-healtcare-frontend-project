@@ -21,7 +21,8 @@ export const registerAction = async (
     if (!result.ok) {
       return { success: false, message: result.message };
     }
-  } catch {
+  } catch (error) {
+    console.error("Auth API request failed:", error);
     return { success: false, message: "Could not reach the server. Please try again." };
   }
   redirect(`/verify-email?email=${encodeURIComponent(parsePayload.data.email)}&sent=1`);

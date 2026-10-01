@@ -20,6 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { AlertCircle, CreditCard, Wallet } from "lucide-react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -75,18 +76,25 @@ const AppointmentBookingConfirmation = ({
 }: AppointmentBookingConfirmationProps) => {
   const router = useRouter();
 
+  // one id per booking attempt: a double click or network retry can't book twice
+  const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
+  const startNewAttempt = () => setIdempotencyKey(crypto.randomUUID());
+
   const payNowMutation = useMutation({
-    mutationFn: bookAppointmentAction,
+    mutationFn: (payload: { doctorId: string; scheduleId: string }) =>
+      bookAppointmentAction(payload, idempotencyKey),
   });
 
   const payLaterMutation = useMutation({
-    mutationFn: bookAppointmentWithPayLaterAction,
+    mutationFn: (payload: { doctorId: string; scheduleId: string }) =>
+      bookAppointmentWithPayLaterAction(payload, idempotencyKey),
   });
 
   const handlePayNow = async () => {
     const result = await payNowMutation.mutateAsync({ doctorId, scheduleId });
 
     if (!result.success) {
+      startNewAttempt();
       toast.error(result.message || "Failed to book appointment");
       return;
     }
@@ -103,6 +111,7 @@ const AppointmentBookingConfirmation = ({
     const result = await payLaterMutation.mutateAsync({ doctorId, scheduleId });
 
     if (!result.success) {
+      startNewAttempt();
       toast.error(result.message || "Failed to book appointment");
       return;
     }
