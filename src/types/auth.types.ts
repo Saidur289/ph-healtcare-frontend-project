@@ -1,15 +1,20 @@
+// Tokens are never in response bodies: the API sets them as cookies.
+export interface IAuthUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  emailVerified: boolean;
+  needPasswordChange: boolean;
+  image: string | null;
+}
+
 export interface ILoginResponse {
-  accessToken: string;
-  refreshToken: string;
-  token: string;
-  user: {
-    needsPasswordChange: boolean;
-    email: string;
-    name: string;
-    role: string;
-    image: string;
-    status: string;
-    isDeleted: boolean;
-    emailVerified: boolean;
-  };
+  user: IAuthUser;
+}
+
+export interface IRegisterResponse {
+  email: string;
+  emailVerificationRequired: boolean;
 }

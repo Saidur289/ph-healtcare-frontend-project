@@ -1,5 +1,8 @@
 import DoctorTable from "@/components/modules/Admin/DoctorManagement/DoctorTable";
-import { getAllSpecialties, getDoctors } from "@/services/doctor.services";
+import {
+  getAllSpecialties,
+  getDoctorsForAdmin,
+} from "@/services/doctor.services";
 import {
   dehydrate,
   HydrationBoundary,
@@ -45,8 +48,8 @@ const DoctorsManagementsPage = async ({
     .filter(Boolean)
     .join("&");
   await queryClient.prefetchQuery({
-    queryKey: ["doctors", queryString],
-    queryFn: () => getDoctors(queryString),
+    queryKey: ["doctors", "admin", queryString],
+    queryFn: () => getDoctorsForAdmin(queryString),
     staleTime: 60 * 60 * 1000, // 1 hour
     gcTime: 5 * 60 * 1000, // 5 minutes
   });

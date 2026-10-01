@@ -1,12 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 import {
   getDefaultDashboardRoute,
   isValidateRedirect,
   UserRole,
 } from "@/lib/authUtils";
-import { httpClient } from "@/lib/axios/httpClient";
-import { setTokenInCookies } from "@/lib/tokenUtils";
+import { applyAuthCookies } from "@/lib/cookieUtils";
+import { callAuthApi } from "@/services/auth.service";
 import { ApiErrorResponse } from "@/types/api.types";
 import { ILoginResponse } from "@/types/auth.types";
 import { ILoginPayload, loginZodSchema } from "@/zod/auth.validation";
@@ -15,54 +14,41 @@ import { redirect } from "next/navigation";
 export const loginAction = async (
   payload: ILoginPayload,
   redirectPath?: string,
-): Promise<ILoginResponse | ApiErrorResponse> => {
+): Promise<ApiErrorResponse> => {
   const parsePayload = loginZodSchema.safeParse(payload);
   if (!parsePayload.success) {
-    const firstError =
-      parsePayload.error.issues[0].message || "Invalid payload";
-    return { success: false, message: firstError };
-  }
-  try {
-    const response = await httpClient.post<ILoginResponse>(
-      "/auth/login",
-      parsePayload.data,
-    );
-    const { accessToken, refreshToken, token, user } = response.data;
-    const { email, role, needsPasswordChange } = user;
-    await setTokenInCookies("accessToken", accessToken);
-    await setTokenInCookies("refreshToken", refreshToken);
-    await setTokenInCookies("better-auth.session_token", token, 24 * 60 * 60); // 1 day
-    if (needsPasswordChange) {
-      redirect(`/reset-password?email=${email}`);
-    } else {
-      const targetPath =
-        redirectPath && isValidateRedirect(redirectPath, role as UserRole)
-          ? redirectPath
-          : getDefaultDashboardRoute(role as UserRole);
-      redirect(targetPath);
-    }
-  } catch (error: any) {
-    // console.log("error in login", error);
-    if (
-      error &&
-      typeof error === "object" &&
-      "digest" &&
-      typeof error.digest === "string" &&
-      error.digest.startsWith("NEXT_REDIRECT")
-    ) {
-      throw error;
-    }
-
-    if (
-      error &&
-      error.response &&
-      error.response.data.message === "Email is not verified"
-    ) {
-      redirect(`/verify-email?email=${payload.email}`);
-    }
     return {
       success: false,
-      message: (error as Error).message || "Something went wrong",
+      message: parsePayload.error.issues[0]?.message || "Invalid payload",
     };
   }
+
+  let target: string;
+  try {
+    const result = await callAuthApi<ILoginResponse>("login", parsePayload.data);
+    if (!result.ok || !result.data?.user) {
+      if (result.message === "Email is not verified") {
+        // the API has just emailed a new code
+        target = `/verify-email?email=${encodeURIComponent(parsePayload.data.email)}`;
+      } else {
+        return { success: false, message: result.message };
+      }
+    } else {
+      // tokens arrive as Set-Cookie headers from the API; copy them to this site
+      await applyAuthCookies(result.setCookies);
+      const { role, needPasswordChange } = result.data.user;
+      if (needPasswordChange) {
+        target = "/change-password?required=1";
+      } else {
+        target =
+          redirectPath && isValidateRedirect(redirectPath, role as UserRole)
+            ? redirectPath
+            : getDefaultDashboardRoute(role as UserRole);
+      }
+    }
+  } catch {
+    return { success: false, message: "Could not reach the server. Please try again." };
+  }
+  // outside try/catch: redirect() works by throwing
+  redirect(target);
 };

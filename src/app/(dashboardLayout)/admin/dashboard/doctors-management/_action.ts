@@ -1,21 +1,22 @@
 "use server";
 
 import {
-  createSchedule,
-  deleteSchedule,
-  getScheduleById,
-  updateSchedule,
-} from "@/services/schedule.services";
+  createDoctor,
+  deleteDoctor,
+  getDoctorByIdForAdmin,
+  updateDoctor,
+} from "@/services/doctor.services";
 import { type ApiErrorResponse, type ApiResponse } from "@/types/api.types";
 import {
-  type ICreateSchedulePayload,
-  type ISchedule,
-  type IUpdateSchedulePayload,
-} from "@/types/schedule.types";
+  type ICreateDoctorPayload,
+  type IDoctors,
+  type IDoctorDetails,
+  type IUpdateDoctorPayload,
+} from "@/types/doctor.types";
 import {
-  createScheduleServerZodSchema,
-  updateScheduleServerZodSchema,
-} from "@/zod/schedule.validation";
+  createDoctorServerZodSchema,
+  updateDoctorServerZodSchema,
+} from "@/zod/doctor.validation";
 
 const getActionErrorMessage = (error: unknown, fallbackMessage: string) => {
   if (
@@ -40,10 +41,10 @@ const getActionErrorMessage = (error: unknown, fallbackMessage: string) => {
   return fallbackMessage;
 };
 
-export const createScheduleAction = async (
-  payload: ICreateSchedulePayload,
-): Promise<ApiResponse<ISchedule[]> | ApiErrorResponse> => {
-  const parsedPayload = createScheduleServerZodSchema.safeParse(payload);
+export const createDoctorAction = async (
+  payload: ICreateDoctorPayload,
+): Promise<ApiResponse<IDoctors> | ApiErrorResponse> => {
+  const parsedPayload = createDoctorServerZodSchema.safeParse(payload);
 
   if (!parsedPayload.success) {
     return {
@@ -53,27 +54,20 @@ export const createScheduleAction = async (
   }
 
   try {
-    return await createSchedule(parsedPayload.data);
+    return await createDoctor(parsedPayload.data);
   } catch (error: unknown) {
     return {
       success: false,
-      message: getActionErrorMessage(error, "Failed to create schedules"),
+      message: getActionErrorMessage(error, "Failed to create doctor"),
     };
   }
 };
 
-export const updateScheduleAction = async (
+export const updateDoctorAction = async (
   id: string,
-  payload: IUpdateSchedulePayload,
-): Promise<ApiResponse<ISchedule> | ApiErrorResponse> => {
-  if (!id) {
-    return {
-      success: false,
-      message: "Invalid schedule id",
-    };
-  }
-
-  const parsedPayload = updateScheduleServerZodSchema.safeParse(payload);
+  payload: IUpdateDoctorPayload,
+): Promise<ApiResponse<IDoctors> | ApiErrorResponse> => {
+  const parsedPayload = updateDoctorServerZodSchema.safeParse(payload);
 
   if (!parsedPayload.success) {
     return {
@@ -83,51 +77,51 @@ export const updateScheduleAction = async (
   }
 
   try {
-    return await updateSchedule(id, parsedPayload.data);
+    return await updateDoctor(id, parsedPayload.data);
   } catch (error: unknown) {
     return {
       success: false,
-      message: getActionErrorMessage(error, "Failed to update schedule"),
+      message: getActionErrorMessage(error, "Failed to update doctor"),
     };
   }
 };
 
-export const deleteScheduleAction = async (
+export const deleteDoctorAction = async (
   id: string,
-): Promise<ApiResponse<boolean> | ApiErrorResponse> => {
+): Promise<ApiResponse<{ message: string }> | ApiErrorResponse> => {
   if (!id) {
     return {
       success: false,
-      message: "Invalid schedule id",
+      message: "Invalid doctor id",
     };
   }
 
   try {
-    return await deleteSchedule(id);
+    return await deleteDoctor(id);
   } catch (error: unknown) {
     return {
       success: false,
-      message: getActionErrorMessage(error, "Failed to delete schedule"),
+      message: getActionErrorMessage(error, "Failed to delete doctor"),
     };
   }
 };
 
-export const getScheduleByIdAction = async (
+export const getDoctorByIdAction = async (
   id: string,
-): Promise<ApiResponse<ISchedule> | ApiErrorResponse> => {
+): Promise<ApiResponse<IDoctorDetails> | ApiErrorResponse> => {
   if (!id) {
     return {
       success: false,
-      message: "Invalid schedule id",
+      message: "Invalid doctor id",
     };
   }
 
   try {
-    return await getScheduleById(id);
+    return await getDoctorByIdForAdmin(id);
   } catch (error: unknown) {
     return {
       success: false,
-      message: getActionErrorMessage(error, "Failed to fetch schedule details"),
+      message: getActionErrorMessage(error, "Failed to fetch doctor details"),
     };
   }
 };

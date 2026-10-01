@@ -1,14 +1,11 @@
 import type { ReactNode } from "react";
+import { requireUser } from "@/lib/requireUser";
 
-export default function DoctorDashboardLayout({
+export default async function DoctorDashboardLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  return (
-    <>
-      DoctorDashboardLayout
-      {children}
-    </>
-  );
+  await requireUser(["DOCTOR"]);
+  return <>{children}</>;
 }

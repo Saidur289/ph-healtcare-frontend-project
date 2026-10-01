@@ -1,67 +1,82 @@
-"use server";
-
-import { setTokenInCookies } from "@/lib/tokenUtils";
+// Server-side helpers for the /auth API. Not a "use server" module: nothing here
+// should be callable from the browser directly (the page actions call these).
+import { cache } from "react";
 import { cookies } from "next/headers";
+import { UserInfo } from "@/types/user.types";
+import {
+  parseSetCookieHeaders,
+  TParsedCookie,
+} from "@/lib/setCookieParser";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 if (!API_BASE_URL) {
   throw new Error("API_BASE_URL is not defined");
 }
-export async function getNewTokenWithRefreshToken(
-  refreshToken: string,
-  better_auth_session_token: string,
-): Promise<boolean> {
+
+const getCookieHeader = async () => {
+  const cookieStore = await cookies();
+  return cookieStore
+    .getAll()
+    .map((cookie) => `${cookie.name}=${cookie.value}`)
+    .join("; ");
+};
+
+export type TAuthApiResult<TData = unknown> = {
+  ok: boolean;
+  status: number;
+  message: string;
+  data?: TData;
+  setCookies: TParsedCookie[];
+};
+
+// POST /auth/<path>. withSession forwards this browser's cookies (logout, change password).
+export const callAuthApi = async <TData = unknown>(
+  path: string,
+  body: unknown,
+  options: { withSession?: boolean } = {},
+): Promise<TAuthApiResult<TData>> => {
+  const res = await fetch(`${API_BASE_URL}/auth/${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.withSession ? { Cookie: await getCookieHeader() } : {}),
+    },
+    body: JSON.stringify(body ?? {}),
+    cache: "no-store",
+  });
+  const json = await res.json().catch(() => ({}));
+  return {
+    ok: res.ok,
+    status: res.status,
+    message: json?.message || (res.ok ? "Success" : "Something went wrong"),
+    data: json?.data,
+    setCookies: parseSetCookieHeaders(res.headers.getSetCookie()),
+  };
+};
+
+// The logged-in user (or null). cache(): the layout, sidebar and navbar all call
+// this during one request, but /auth/me is fetched only once.
+export const getUserInfo = cache(async (): Promise<UserInfo | null> => {
   try {
-    const res = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: `refreshToken=${refreshToken}; better-auth.session_token=${better_auth_session_token}`,
-      },
-    });
-    if (!res.ok) throw new Error("Failed to refresh token");
-    const data = await res.json();
-    const {
-      accessToken,
-      refreshToken: newRefreshToken,
-      sessionToken: token,
-    } = data;
-    if (accessToken) {
-      await setTokenInCookies("accessToken", accessToken);
+    const cookieStore = await cookies();
+    if (!cookieStore.get("accessToken") || !cookieStore.get("better-auth.session_token")) {
+      return null;
     }
-    if (newRefreshToken) {
-      await setTokenInCookies("refreshToken", newRefreshToken);
-    }
-    if (token) {
-      await setTokenInCookies("better-auth.session_token", token, 24 * 60 * 60); // 1 day
-    }
-    return true;
-  } catch (error) {
-    console.log("Error in get refreshToken", error);
-    return false;
-  }
-}
-export async function getUserInfo() {
-  try {
-    const cookie = await cookies();
-    const accessToken = cookie.get("accessToken")?.value;
-    const sessionToken = cookie.get("better-auth.session_token")?.value;
-    if (!accessToken) return null;
     const res = await fetch(`${API_BASE_URL}/auth/me`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Cookie: `accessToken=${accessToken}; better-auth.session_token=${sessionToken}`,
+        Cookie: await getCookieHeader(),
       },
+      cache: "no-store",
     });
     if (!res.ok) {
-      console.log("Failed to get user info");
       return null;
     }
     const data = await res.json();
-    return data.data;
+    return data.data ?? null;
   } catch (error) {
-    console.log("Error in get user info", error);
+    console.error("Error in get user info", error);
     return null;
   }
-}
+});

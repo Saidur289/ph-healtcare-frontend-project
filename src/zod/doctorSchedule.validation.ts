@@ -17,7 +17,7 @@ export const updateDoctorScheduleServerZodSchema = z.object({
     .array(
       z.object({
         shouldDelete: z.boolean(),
-        id: z.uuid("Schedule id must be a valid UUID"),
+        scheduleId: z.uuid("Schedule id must be a valid UUID"),
       }),
     )
     .min(1, "Provide at least one schedule change"),

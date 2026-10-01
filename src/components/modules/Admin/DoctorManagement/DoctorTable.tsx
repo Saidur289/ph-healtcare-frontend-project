@@ -1,6 +1,9 @@
 "use client";
 import DataTable from "@/components/shared/table/DataTable";
-import { getAllSpecialties, getDoctors } from "@/services/doctor.services";
+import {
+  getAllSpecialties,
+  getDoctorsForAdmin,
+} from "@/services/doctor.services";
 import { useQuery } from "@tanstack/react-query";
 import { doctorColumn } from "./doctorsColumns";
 import {
@@ -87,8 +90,8 @@ const DoctorTable = ({
     isLoading,
     isFetching,
   } = useQuery({
-    queryKey: ["doctors", queryString],
-    queryFn: () => getDoctors(queryString),
+    queryKey: ["doctors", "admin", queryString],
+    queryFn: () => getDoctorsForAdmin(queryString),
     refetchOnWindowFocus: "always",
   });
   const { data: specialtiesDataResponse, isLoading: isLoadingSpecialties } =

@@ -1,10 +1,13 @@
 import DashboardNavbar from "@/components/modules/Dashboard/DashboardNavbar";
 import DashboardSidebar from "@/components/modules/Dashboard/DashboardSidebar";
+import { requireUser } from "@/lib/requireUser";
 import { ReactNode } from "react";
 
-const RootDashboardLayout = ({ children }: { children: ReactNode }) => {
+const RootDashboardLayout = async ({ children }: { children: ReactNode }) => {
+  // every dashboard page needs a logged-in user
+  await requireUser();
   return (
-    <div className="flex h-screen, overflow-hidden">
+    <div className="flex h-screen overflow-hidden">
       {/* dashboard layout */}
       <DashboardSidebar />
       <div className="flex flex-1 overflow-hidden flex-col">

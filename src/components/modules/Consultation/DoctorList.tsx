@@ -368,9 +368,6 @@ const DoctorsList = ({
                       <p className="text-xs text-muted-foreground">
                         {doctor.currentWorkingPlace || "N/A"}
                       </p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {doctor.email || "N/A"}
-                      </p>
                     </div>
                   </div>
 

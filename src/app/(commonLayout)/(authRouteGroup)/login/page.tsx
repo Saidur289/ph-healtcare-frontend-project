@@ -1,11 +1,41 @@
 import LoginForm from "@/components/modules/Auth/LoginForm";
+
 interface LoginParams {
-  searchParams: Promise<{ redirect?: string }>;
+  searchParams: Promise<{
+    redirect?: string;
+    verified?: string;
+    reset?: string;
+    error?: string;
+    email?: string;
+  }>;
 }
+
+// short, fixed texts only: never render a raw query param as a message
+const OAUTH_ERRORS: Record<string, string> = {
+  "no-session-found": "Google login failed. Please try again.",
+  "no-user-found": "Google login failed. Please try again.",
+  "account-unavailable": "This account is blocked or deleted.",
+};
+
 const LoginPage = async ({ searchParams }: LoginParams) => {
   const param = await searchParams;
-  const redirectPath = param?.redirect;
-  return <LoginForm redirectPath={redirectPath} />;
+  const notice =
+    param.verified === "1"
+      ? "Your email is verified. Please log in."
+      : param.reset === "1"
+        ? "Your password was reset. Please log in with your new password."
+        : undefined;
+  const error = param.error
+    ? (OAUTH_ERRORS[param.error] ?? "Login failed. Please try again.")
+    : undefined;
+  return (
+    <LoginForm
+      redirectPath={param.redirect}
+      notice={notice}
+      initialError={error}
+      initialEmail={param.email}
+    />
+  );
 };
 
 export default LoginPage;

@@ -21,28 +21,38 @@ import Link from "next/link";
 import { useState } from "react";
 interface LoginFormProps {
   redirectPath?: string;
+  notice?: string;
+  initialError?: string;
+  initialEmail?: string;
 }
-const LoginForm = ({ redirectPath }: LoginFormProps) => {
-  const [serverError, setServerError] = useState<string | null>(null);
+const LoginForm = ({
+  redirectPath,
+  notice,
+  initialError,
+  initialEmail,
+}: LoginFormProps) => {
+  const [serverError, setServerError] = useState<string | null>(
+    initialError ?? null,
+  );
   const [showPassword, setShowPassword] = useState(false);
   const { mutateAsync, isPending } = useMutation({
     mutationFn: (payload: ILoginPayload) => loginAction(payload, redirectPath),
   });
   const form = useForm({
     defaultValues: {
-      email: "",
+      email: initialEmail ?? "",
       password: "",
     },
     onSubmit: async ({ value }) => {
       setServerError(null);
       try {
+        // on success the action redirects, so only errors come back
         const result = (await mutateAsync(value)) as any;
-        if (!result.success) {
-          setServerError(result.message || "Login Invalid");
+        if (result && !result.success) {
+          setServerError(result.message || "Login failed");
         }
-      } catch (error: any) {
-        console.log("Error Login Function", error);
-        setServerError(`Login Invalid, ${error.message}`);
+      } catch {
+        setServerError("Login failed. Please try again.");
       }
     },
   });
@@ -92,6 +102,8 @@ const LoginForm = ({ redirectPath }: LoginFormProps) => {
                 aria-label={showPassword ? "show password" : "hide password"}
                 append={
                   <Button
+                    type="button"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                     onClick={() => setShowPassword(!showPassword)}
                     size="icon"
                     variant="ghost"
@@ -115,6 +127,11 @@ const LoginForm = ({ redirectPath }: LoginFormProps) => {
               Forget Password?
             </Link>
           </div>
+          {notice && !serverError && (
+            <Alert>
+              <AlertDescription>{notice}</AlertDescription>
+            </Alert>
+          )}
           {serverError && (
             <Alert variant="destructive">
               <AlertDescription>{serverError}</AlertDescription>
@@ -145,12 +162,13 @@ const LoginForm = ({ redirectPath }: LoginFormProps) => {
           </div>
         </div>
         <Button
+          type="button"
           variant={"outline"}
           className="w-full"
           onClick={() => {
             const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-            //TODO REDIRECT AFTER LOGIN
-            window.location.href = `${baseUrl}/auth/login/google`;
+            const redirect = redirectPath?.startsWith("/") ? redirectPath : "/dashboard";
+            window.location.href = `${baseUrl}/auth/login/google?redirect=${encodeURIComponent(redirect)}`;
           }}
         >
           <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">

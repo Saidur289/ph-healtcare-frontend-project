@@ -263,7 +263,7 @@ const ViewDoctorProfileDialog = ({
                       Doctor Schedules
                     </h3>
                     <div className="space-y-2">
-                      {(doctorDetails.schedules ?? [])
+                      {(doctorDetails.doctorSchedules ?? [])
                         .slice(0, 8)
                         .map((item: IDoctorScheduleItem, index: number) => (
                           <div
@@ -288,7 +288,7 @@ const ViewDoctorProfileDialog = ({
                             </p>
                           </div>
                         ))}
-                      {!doctorDetails.schedules?.length && (
+                      {!doctorDetails.doctorSchedules?.length && (
                         <p className="text-sm text-muted-foreground">
                           No schedules available.
                         </p>

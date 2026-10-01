@@ -21,6 +21,21 @@ export const getDoctors = async (queryString: string) => {
   }
 };
 
+// Admin only: full doctor data (server checks ADMIN / SUPER_ADMIN)
+export const getDoctorsForAdmin = async (queryString: string) => {
+  const doctors = await httpClient.get<IDoctors[]>(
+    queryString ? `/doctors/admin?${queryString}` : "/doctors/admin",
+  );
+  return doctors;
+};
+
+export const getDoctorByIdForAdmin = async (id: string) => {
+  const doctor = await httpClient.get<IDoctorDetails>(
+    `/doctors/admin/${encodeURIComponent(id)}`,
+  );
+  return doctor;
+};
+
 export const getAllSpecialties = async () => {
   try {
     const specialties = await httpClient.get<ISpecialty[]>("/specialties");

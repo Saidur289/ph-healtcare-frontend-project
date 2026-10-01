@@ -4,6 +4,7 @@ import {
   type IUpdateDoctorPayload,
 } from "@/types/doctor.types";
 import { z } from "zod";
+import { passwordSchema } from "./auth.validation";
 
 const emptyStringToUndefined = (value: unknown) => {
   if (typeof value === "string" && value.trim() === "") {
@@ -18,10 +19,8 @@ const emptyStringToUndefined = (value: unknown) => {
 ========================= */
 
 export const createDoctorFormZodSchema = z.object({
-  password: z
-    .string()
-    .min(6, "Password must be at least 6 characters")
-    .max(20, "Password must be at most 20 characters"),
+  // same policy as every other password (zod/auth.validation.ts)
+  password: passwordSchema,
 
   name: z
     .string()
@@ -104,10 +103,8 @@ export const createDoctorFormZodSchema = z.object({
 ========================= */
 
 export const createDoctorServerZodSchema = z.object({
-  password: z
-    .string()
-    .min(6, "Password must be at least 6 characters")
-    .max(20, "Password must be at most 20 characters"),
+  // same policy as every other password (zod/auth.validation.ts)
+  password: passwordSchema,
 
   doctor: z.object({
     name: z

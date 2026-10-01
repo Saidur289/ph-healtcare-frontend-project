@@ -40,6 +40,11 @@ export interface IDoctorReview {
   rating?: number;
   comment?: string;
   patientId?: string;
+  // public doctor page only gets the reviewer's name and photo
+  patient?: {
+    name?: string;
+    profilePhoto?: string | null;
+  };
   createdAt?: string | Date;
 }
 

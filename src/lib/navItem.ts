@@ -9,7 +9,7 @@ export const getCommonNavItems = (role: UserRole): NavSection[] => {
         {
           title: "Home",
           href: "/",
-          icon: "home",
+          icon: "Home",
         },
         {
           title: "Dashboard",
@@ -62,6 +62,7 @@ export const doctorNavItems: NavSection[] = [
     ],
   },
 ];
+const ADMINS_MANAGEMENT_HREF = "/admin/dashboard/admins-management";
 export const adminNavItems: NavSection[] = [
   {
     title: "User Management",
@@ -78,7 +79,7 @@ export const adminNavItems: NavSection[] = [
       },
       {
         title: "Admins",
-        href: "/admin/dashboard/admins-management",
+        href: ADMINS_MANAGEMENT_HREF,
         icon: "Shield",
       },
     ],
@@ -119,22 +120,12 @@ export const adminNavItems: NavSection[] = [
       {
         title: "Doctors Schedules",
         href: "/admin/dashboard/doctor-schedules-management",
-        icon: "CalenderClock",
+        icon: "CalendarClock",
       },
       {
         title: "Doctors Specialties",
         href: "/admin/dashboard/doctor-specialties-management",
         icon: "Stethoscope",
-      },
-      {
-        title: "Prescriptions",
-        href: "/admin/dashboard/prescriptions-management",
-        icon: "FileText",
-      },
-      {
-        title: "Payments",
-        href: "/admin/dashboard/payments-management",
-        icon: "CreditCard",
       },
     ],
   },
@@ -149,8 +140,9 @@ export const patientNavItems: NavSection[] = [
         icon: "Calendar",
       },
       {
+        // booking starts by choosing a doctor and a free slot
         title: "Book Appointment",
-        href: "/dashboard/book-appointment",
+        href: "/consultation",
         icon: "Calendar",
       },
     ],
@@ -177,6 +169,16 @@ export const commonNavItems = (role: UserRole): NavSection[] => {
     case "DOCTOR":
       return [...commonNavItems, ...doctorNavItems];
     case "ADMIN":
+      // managing admins is SUPER_ADMIN only (the API enforces it too)
+      return [
+        ...commonNavItems,
+        ...adminNavItems.map((section) => ({
+          ...section,
+          items: section.items.filter(
+            (item) => item.href !== ADMINS_MANAGEMENT_HREF,
+          ),
+        })),
+      ];
     case "SUPER_ADMIN":
       return [...commonNavItems, ...adminNavItems];
     case "PATIENT":

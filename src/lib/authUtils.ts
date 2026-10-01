@@ -1,11 +1,7 @@
 export type UserRole = "SUPER_ADMIN" | "ADMIN" | "DOCTOR" | "PATIENT";
-export const authRoutes = [
-  "/login",
-  "/register",
-  "/forget-password",
-  "/reset-password",
-  "/verify-email",
-];
+// pages a logged-in user is sent away from. /verify-email and /reset-password are
+// NOT here: they must stay reachable (otherwise redirect loops).
+export const authRoutes = ["/login", "/register", "/forgot-password"];
 export const isAuthRoutes = (pathname: string) => {
   return authRoutes.some((router: string) => router === pathname);
 };
@@ -54,10 +50,30 @@ export const getDefaultDashboardRoute = (role: UserRole) => {
   if (role === "PATIENT") return "/dashboard";
   return "/";
 };
+// Only same-site relative paths like "/dashboard?x=1" are allowed.
+// Blocks open redirects such as "https://evil.com", "//evil.com", "/\evil.com".
+const SAFE_REDIRECT_BASE = "http://internal.invalid";
+export const getSafeInternalPathname = (redirectPath: string) => {
+  if (typeof redirectPath !== "string") return null;
+  if (!redirectPath.startsWith("/") || redirectPath.startsWith("//")) {
+    return null;
+  }
+  // backslashes and control characters are treated as "//" by some browsers
+  if (/[\\\u0000-\u001F\u007F]/.test(redirectPath)) return null;
+  try {
+    const url = new URL(redirectPath, SAFE_REDIRECT_BASE);
+    if (url.origin !== SAFE_REDIRECT_BASE) return null;
+    return url.pathname;
+  } catch {
+    return null;
+  }
+};
 export const isValidateRedirect = (redirectPath: string, role: UserRole) => {
+  const pathname = getSafeInternalPathname(redirectPath);
+  if (!pathname) return false;
   const unifyRoleForSuperAdmin = role === "SUPER_ADMIN" ? "ADMIN" : role;
   role = unifyRoleForSuperAdmin;
-  const getOwner = getRouteOwner(redirectPath);
+  const getOwner = getRouteOwner(pathname);
   if (getOwner === "COMMON" || getOwner === null) return true;
   if (getOwner === role) return true;
   return false;

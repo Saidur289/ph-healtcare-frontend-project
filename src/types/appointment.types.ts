@@ -38,6 +38,7 @@ export interface IAppointment {
   scheduleId?: string;
   videoCallingId?: string;
   status?: AppointmentStatus;
+  paymentStatus?: PaymentStatus;
   createdAt?: string | Date;
   updatedAt?: string | Date;
   doctor?: IAppointmentDoctor;

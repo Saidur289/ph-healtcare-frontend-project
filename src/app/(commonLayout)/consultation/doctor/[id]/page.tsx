@@ -206,23 +206,16 @@ const ConsultationDoctorByIdPage = async ({
         </div>
 
         <div className="rounded-2xl border bg-card p-5 shadow-sm">
-          <h2 className="mb-3 text-base font-semibold">Contact Information</h2>
+          {/* private contact details (email, phone, address) are not public */}
+          <h2 className="mb-3 text-base font-semibold">About</h2>
           <div className="space-y-2 text-sm">
-            <p>
-              <span className="font-medium">Email:</span>{" "}
-              {doctorDetails.email || "N/A"}
-            </p>
-            <p>
-              <span className="font-medium">Contact Number:</span>{" "}
-              {doctorDetails.contactNumber || "N/A"}
-            </p>
             <p>
               <span className="font-medium">Gender:</span>{" "}
               {doctorDetails.gender || "N/A"}
             </p>
             <p>
-              <span className="font-medium">Address:</span>{" "}
-              {doctorDetails.address || "N/A"}
+              <span className="font-medium">Works at:</span>{" "}
+              {doctorDetails.currentWorkingPlace || "N/A"}
             </p>
           </div>
         </div>
@@ -277,8 +270,8 @@ const ConsultationDoctorByIdPage = async ({
                 {review.comment || "N/A"}
               </p>
               <p>
-                <span className="font-medium">Patient ID:</span>{" "}
-                {review.patientId || "N/A"}
+                <span className="font-medium">By:</span>{" "}
+                {review.patient?.name || "Anonymous"}
               </p>
               <p className="text-xs text-muted-foreground">
                 {formatDateTime(review.createdAt)}

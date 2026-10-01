@@ -37,7 +37,7 @@ export const updateDoctorSchedule = async (
 ) => {
   try {
     return await httpClient.patch<{ count: number }>(
-      "/doctor-schedules/update-my-doctor-schedule",
+      "/doctor-schedules/update-doctor-schedule",
       payload,
     );
   } catch (error) {
@@ -48,7 +48,7 @@ export const updateDoctorSchedule = async (
 export const deleteDoctorSchedule = async (id: string) => {
   try {
     return await httpClient.delete<null>(
-      `/doctor-schedules/delete-my-doctor-schedule/${id}`,
+      `/doctor-schedules/delete-my-schedule/${encodeURIComponent(id)}`,
     );
   } catch (error) {
     console.log("Error deleting doctor schedule", error);
