@@ -46,6 +46,9 @@ export interface IAppointment {
   patient?: IAppointmentPatient;
   schedule?: IAppointmentSchedule;
   payment?: IAppointmentPayment;
+  // present when one exists (lists only)
+  review?: { id: string; rating: number } | null;
+  prescription?: { id: string; pdfUrl?: string | null } | null;
 }
 export interface IBookAppointmentPayload {
   doctorId: string;

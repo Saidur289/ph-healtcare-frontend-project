@@ -22,6 +22,8 @@ import {
   CreditCard,
 } from "lucide-react";
 import Link from "next/link";
+import ReviewForm from "./ReviewForm";
+import { useNow } from "@/hooks/useNow";
 import { useMemo } from "react";
 import { toast } from "sonner";
 
@@ -49,6 +51,7 @@ const PatientAppointmentsList = ({
   feedbackType,
   feedbackMessage,
 }: PatientAppointmentsListProps) => {
+  const now = useNow();
   const initiatePaymentMutation = useMutation({
     mutationFn: initiateAppointmentPaymentAction,
   });
@@ -214,7 +217,24 @@ const PatientAppointmentsList = ({
                   </div>
                 </CardContent>
 
-                <CardFooter className="justify-between gap-3">
+                <CardFooter className="flex-wrap justify-between gap-3">
+                  {/* the call opens 10 min before the start and closes at the end (API rule) */}
+                  {appointment.paymentStatus === "PAID" &&
+                    (appointment.status === "SCHEDULED" || appointment.status === "INPROGRESS") &&
+                    now >= new Date(appointment.schedule?.startDateTime ?? 0).getTime() - 10 * 60 * 1000 &&
+                    now <= new Date(appointment.schedule?.endDateTime ?? 0).getTime() && (
+                      <Button asChild>
+                        <Link href={`/consultation/room/${appointment.id}`}>Join call</Link>
+                      </Button>
+                    )}
+                  {appointment.status === "COMPLETED" && !appointment.review && (
+                    <ReviewForm appointmentId={appointment.id} />
+                  )}
+                  {appointment.prescription && (
+                    <Button asChild variant="outline">
+                      <Link href="/dashboard/my-prescriptions">Prescription</Link>
+                    </Button>
+                  )}
                   <Button asChild variant="outline">
                     <Link
                       href={`/consultation/doctor/${appointment.doctorId || appointment.doctor?.id || ""}`}
