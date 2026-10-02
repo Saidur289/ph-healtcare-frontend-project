@@ -39,6 +39,8 @@ export interface MultiSelectFilterConfig extends BaseFilterConfig {
 }
 export interface RangeFilterConfig extends BaseFilterConfig {
   type: "range";
+  // "date": pick days; stored as ISO instants (start of the From day, end of the To day)
+  inputType?: "number" | "date";
 }
 export type DataTableFilterConfig =
   | SingleSelectFilterConfig
@@ -65,6 +67,9 @@ const RANGE_OPERATOR_LABEL: Record<RangeOperator, string> = {
   gte: "Min",
   lte: "Max",
 };
+const DATE_OPERATOR_LABEL: Record<RangeOperator, string> = { gte: "From", lte: "To" };
+const operatorLabel = (filter: RangeFilterConfig, operator: RangeOperator) =>
+  (filter.inputType === "date" ? DATE_OPERATOR_LABEL : RANGE_OPERATOR_LABEL)[operator];
 const isRangeValue = (
   value: DataTableFilterValue | undefined,
 ): value is DataTableRangeValue => {
@@ -200,6 +205,17 @@ const SingleSelectFilter = ({
   );
 };
 const RANGE_OPERATORS: RangeOperator[] = ["gte", "lte"];
+
+// date ranges: local day -> ISO instant ("From" = 00:00, "To" = 23:59:59.999 of that day)
+const dayToIso = (day: string, operator: RangeOperator) =>
+  new Date(`${day}T${operator === "gte" ? "00:00:00.000" : "23:59:59.999"}`).toISOString();
+const isoToDay = (iso?: string) => {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
 const RangeFilterControl = ({
   filter,
   value,
@@ -231,21 +247,38 @@ const RangeFilterControl = ({
         {RANGE_OPERATORS.map((operator) => (
           <div key={operator} className="space-y-1">
             <Label className="text-xs text-muted-foreground">
-              {RANGE_OPERATOR_LABEL[operator]}
+              {operatorLabel(filter, operator)}
             </Label>
-            <Input
-              type="number"
-              value={rangeValue[operator] ?? ""}
-              onChange={(event) => {
-                const nextValue = event.target.value;
-                setRangeValue((prevValue) => ({
-                  ...prevValue,
-                  [operator]: nextValue,
-                }));
-              }}
-              placeholder="0"
-              disabled={isLoading}
-            />
+            {filter.inputType === "date" ? (
+              <Input
+                type="date"
+                aria-label={`${filter.label} ${operatorLabel(filter, operator)}`}
+                value={isoToDay(rangeValue[operator])}
+                onChange={(event) => {
+                  const day = event.target.value;
+                  setRangeValue((prevValue) => ({
+                    ...prevValue,
+                    [operator]: day ? dayToIso(day, operator) : "",
+                  }));
+                }}
+                disabled={isLoading}
+              />
+            ) : (
+              <Input
+                type="number"
+                aria-label={`${filter.label} ${operatorLabel(filter, operator)}`}
+                value={rangeValue[operator] ?? ""}
+                onChange={(event) => {
+                  const nextValue = event.target.value;
+                  setRangeValue((prevValue) => ({
+                    ...prevValue,
+                    [operator]: nextValue,
+                  }));
+                }}
+                placeholder="0"
+                disabled={isLoading}
+              />
+            )}
           </div>
         ))}
       </div>
@@ -325,7 +358,7 @@ const DataTableFilters = ({
           if (val) {
             badges.push({
               key: `${filter.id}:${op}`,
-              label: `${filter.label}: ${RANGE_OPERATOR_LABEL[op]} ${val}`,
+              label: `${filter.label}: ${operatorLabel(filter, op)} ${filter.inputType === "date" ? isoToDay(val) : val}`,
               onRemove: () => {
                 const next: DataTableRangeValue = { ...filterValue, [op]: "" };
                 const hasAny = RANGE_OPERATORS.some((o) => next[o]?.trim());
