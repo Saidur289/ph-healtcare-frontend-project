@@ -172,7 +172,7 @@ const DoctorAppointmentsList = ({ appointments }: { appointments: IAppointment[]
                     )}
                     {needsPrescription && (
                       <Button asChild size="sm" variant="outline">
-                        <Link href={`/doctor/dashboard/prescriptions?appointmentId=${a.id}`}>
+                        <Link href={`/doctor/dashboard/prescriptions?appointmentId=${encodeURIComponent(a.id)}`}>
                           <FileText className="h-4 w-4" aria-hidden /> Write prescription
                         </Link>
                       </Button>

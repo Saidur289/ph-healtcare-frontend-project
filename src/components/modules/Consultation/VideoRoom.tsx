@@ -106,7 +106,7 @@ const VideoRoom = ({
         return;
       }
       toast.success(result.message);
-      router.push(`/doctor/dashboard/prescriptions?appointmentId=${appointment.id}`);
+      router.push(`/doctor/dashboard/prescriptions?appointmentId=${encodeURIComponent(appointment.id)}`);
     });
 
   // ---------- in the call ----------
@@ -124,7 +124,7 @@ const VideoRoom = ({
             {isDoctor && (
               <>
                 <Button asChild variant="outline">
-                  <Link href={`/doctor/dashboard/prescriptions?appointmentId=${appointment.id}`}>
+                  <Link href={`/doctor/dashboard/prescriptions?appointmentId=${encodeURIComponent(appointment.id)}`}>
                     <FileText className="mr-2 h-4 w-4" /> Write prescription
                   </Link>
                 </Button>

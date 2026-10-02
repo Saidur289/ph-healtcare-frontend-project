@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { buildCsp, createNonce } from "./lib/csp";
 import { JwtPayload } from "jsonwebtoken";
 import JwtUtils from "./lib/jwtUtils";
 import {
@@ -63,7 +64,25 @@ const loginRedirect = (request: NextRequest) => {
   return NextResponse.redirect(loginUrl);
 };
 
+// Every page response gets a Content-Security-Policy with a fresh nonce (lib/csp.ts).
+// Next.js reads the nonce from the request's CSP header and adds it to its own scripts.
 export async function proxy(request: NextRequest) {
+  const nonce = createNonce();
+  const csp = buildCsp(nonce);
+  const response = await handleRequest(request, nonce, csp);
+  response.headers.set("Content-Security-Policy", csp);
+  return response;
+}
+
+async function handleRequest(request: NextRequest, nonce: string, csp: string) {
+  // request headers for the page render: nonce + CSP (and refreshed cookies, below)
+  const pageHeaders = () => {
+    const headers = new Headers(request.headers);
+    headers.set("x-nonce", nonce);
+    headers.set("Content-Security-Policy", csp);
+    return headers;
+  };
+  const next = () => NextResponse.next({ request: { headers: pageHeaders() } });
   const { pathname } = request.nextUrl;
   const routeOwner = getRouteOwner(pathname);
   const isProtected = routeOwner !== null;
@@ -116,7 +135,7 @@ export async function proxy(request: NextRequest) {
       response = NextResponse.redirect(new URL(dashboard, request.url));
     } else if (!isProtected) {
       // 3. public pages (incl. /verify-email and /reset-password)
-      response = NextResponse.next();
+      response = next();
     } else if (!isLoggedIn) {
       // 4. protected page without a valid session
       response = loginRedirect(request);
@@ -127,7 +146,7 @@ export async function proxy(request: NextRequest) {
       // 6. role check runs on EVERY protected request
       response = NextResponse.redirect(new URL(dashboard, request.url));
     } else {
-      response = NextResponse.next();
+      response = next();
     }
 
     // 7. pass fresh cookies to this request's server code AND to the browser
@@ -135,7 +154,7 @@ export async function proxy(request: NextRequest) {
       if (response.headers.get("x-middleware-next") === "1") {
         const forwarded = new Map(request.cookies.getAll().map((c) => [c.name, c.value]));
         refreshedCookies.forEach((c) => forwarded.set(c.name, c.value));
-        const requestHeaders = new Headers(request.headers);
+        const requestHeaders = pageHeaders();
         requestHeaders.set(
           "cookie",
           Array.from(forwarded, ([name, value]) => `${name}=${value}`).join("; "),
@@ -152,7 +171,7 @@ export async function proxy(request: NextRequest) {
   } catch (error) {
     console.error("Error in proxy:", error);
     // fail closed: never let an error open a protected page
-    return isProtected ? loginRedirect(request) : NextResponse.next();
+    return isProtected ? loginRedirect(request) : next();
   }
 }
 

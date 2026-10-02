@@ -37,7 +37,8 @@ function getQueryClient() {
   }
 }
 
-export function QueryProviders({ children }: { children: React.ReactNode }) {
+// nonce: the streamed-hydration inline scripts must pass the Content-Security-Policy
+export function QueryProviders({ children, nonce }: { children: React.ReactNode; nonce?: string }) {
   // NOTE: Avoid useState when initializing the query client if you don't
   //       have a suspense boundary between this and the code that may
   //       suspend because React will throw away the client on the initial
@@ -46,7 +47,7 @@ export function QueryProviders({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ReactQueryStreamedHydration>{children}</ReactQueryStreamedHydration>
+      <ReactQueryStreamedHydration nonce={nonce}>{children}</ReactQueryStreamedHydration>
     </QueryClientProvider>
   );
 }
