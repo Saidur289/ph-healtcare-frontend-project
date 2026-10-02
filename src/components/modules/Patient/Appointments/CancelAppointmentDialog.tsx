@@ -1,4 +1,5 @@
 "use client";
+import { doctorCancelAppointmentAction } from "@/app/_actions/consultation.actions";
 import { cancelAppointmentAction } from "@/app/_actions/patientAppointment.actions";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +19,8 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
-const CancelAppointmentDialog = ({ appointment }: { appointment: IAppointment }) => {
+// used by patients (until 2 h before) and doctors (any time before the visit)
+const CancelAppointmentDialog = ({ appointment, who = "patient" }: { appointment: IAppointment; who?: "patient" | "doctor" }) => {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
@@ -27,9 +29,10 @@ const CancelAppointmentDialog = ({ appointment }: { appointment: IAppointment })
 
   const confirm = () =>
     startTransition(async () => {
-      const result = await cancelAppointmentAction(appointment.id, reason || undefined);
+      const cancel = who === "doctor" ? doctorCancelAppointmentAction : cancelAppointmentAction;
+      const result = await cancel(appointment.id, reason || undefined);
       if (!result.success) return void toast.error(result.message);
-      toast.success(paid ? `${result.message}. Your refund is on its way.` : result.message);
+      toast.success(paid && who === "patient" ? `${result.message}. Your refund is on its way.` : result.message);
       setOpen(false);
       router.refresh();
     });
@@ -45,9 +48,13 @@ const CancelAppointmentDialog = ({ appointment }: { appointment: IAppointment })
         <DialogHeader>
           <DialogTitle>Cancel this appointment?</DialogTitle>
           <DialogDescription>
-            {paid
-              ? "Your payment will be refunded to the same card. Refunds usually arrive in 5–10 days."
-              : "The time slot will be released for other patients."}
+            {who === "doctor"
+              ? paid
+                ? "The patient is refunded automatically and sees the cancellation in their appointments."
+                : "The patient sees the cancellation in their appointments."
+              : paid
+                ? "Your payment will be refunded to the same card. Refunds usually arrive in 5–10 days."
+                : "The time slot will be released for other patients."}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-1.5">
@@ -58,7 +65,7 @@ const CancelAppointmentDialog = ({ appointment }: { appointment: IAppointment })
             maxLength={300}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="Let the doctor know why"
+            placeholder={who === "doctor" ? "Tell the patient why" : "Let the doctor know why"}
           />
         </div>
         <DialogFooter>

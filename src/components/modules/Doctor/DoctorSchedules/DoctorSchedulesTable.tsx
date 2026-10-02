@@ -86,8 +86,6 @@ const DoctorSchedulesTable = ({
 
   const doctorSchedules = doctorSchedulesResponse?.data ?? [];
   const meta: PaginationMeta | undefined = doctorSchedulesResponse?.meta;
-  const bookedCount = doctorSchedules.filter((item) => item.isBooked).length;
-  const availableCount = doctorSchedules.length - bookedCount;
 
   const filterConfigs = useMemo<DataTableFilterConfig[]>(() => {
     return [
@@ -112,29 +110,7 @@ const DoctorSchedulesTable = ({
   return (
     <>
       <div className="space-y-5">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            My Schedules
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Track your assigned slots and book upcoming schedules from
-            admin-created availability.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="rounded-full border bg-muted/40 px-3 py-1 text-xs font-medium text-muted-foreground">
-            Total: {meta?.total ?? doctorSchedules.length}
-          </div>
-          <div className="rounded-full border bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-            Available: {availableCount}
-          </div>
-          <div className="rounded-full border bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
-            Booked: {bookedCount}
-          </div>
-        </div>
-
-        <div className="rounded-2xl border bg-card p-3 shadow-sm sm:p-4">
+        <div>
           <DataTable
             data={doctorSchedules}
             columns={doctorSchedulesColumns}
@@ -150,7 +126,7 @@ const DoctorSchedulesTable = ({
             }}
             search={{
               initialValue: searchTermFromUrl,
-              placeholder: "Search by doctor id, schedule id...",
+              placeholder: "Search by schedule id...",
               debounceMs: 700,
               onDebounceChange: handleDebouncedSearchChange,
             }}

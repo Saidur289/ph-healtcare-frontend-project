@@ -5,6 +5,7 @@ import {
   createPrescription,
   createReview,
 } from "@/services/consultation.services";
+import { getUserInfo } from "@/services/auth.service";
 import { z } from "zod";
 
 type TResult = { success: true; message: string } | { success: false; message: string };
@@ -71,5 +72,33 @@ export const createReviewAction = async (payload: z.infer<typeof reviewSchema>):
     return { success: true, message: "Thank you for your review!" };
   } catch (error) {
     return { success: false, message: apiMessage(error, "Could not save the review") };
+  }
+};
+
+const reasonSchema = z.string().trim().max(300, "Reason must be at most 300 characters").optional();
+
+// doctor cancels any time before the visit (the API refunds a paid booking)
+export const doctorCancelAppointmentAction = async (appointmentId: string, reason?: string): Promise<TResult> => {
+  if ((await getUserInfo())?.role !== "DOCTOR") return { success: false, message: "Only doctors can do this" };
+  if (!idSchema.safeParse(appointmentId).success) return { success: false, message: "Invalid appointment" };
+  const parsedReason = reasonSchema.safeParse(reason || undefined);
+  if (!parsedReason.success) return { success: false, message: parsedReason.error.issues[0]?.message ?? "Invalid reason" };
+  try {
+    await changeAppointmentStatus(appointmentId, "CANCELED", parsedReason.data);
+    return { success: true, message: "Appointment cancelled" };
+  } catch (error) {
+    return { success: false, message: apiMessage(error, "Could not cancel the appointment") };
+  }
+};
+
+// allowed by the API from 15 minutes after the start
+export const markNoShowAction = async (appointmentId: string): Promise<TResult> => {
+  if ((await getUserInfo())?.role !== "DOCTOR") return { success: false, message: "Only doctors can do this" };
+  if (!idSchema.safeParse(appointmentId).success) return { success: false, message: "Invalid appointment" };
+  try {
+    await changeAppointmentStatus(appointmentId, "NO_SHOW");
+    return { success: true, message: "Marked as no-show" };
+  } catch (error) {
+    return { success: false, message: apiMessage(error, "Could not update the appointment") };
   }
 };

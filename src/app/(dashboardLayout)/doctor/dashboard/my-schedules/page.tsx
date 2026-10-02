@@ -1,54 +1,61 @@
 import DoctorSchedulesTable from "@/components/modules/Doctor/DoctorSchedules/DoctorSchedulesTable";
+import ScheduleViewTabs from "@/components/modules/Doctor/DoctorSchedules/ScheduleViewTabs";
+import ScheduleWeekCalendar from "@/components/modules/Doctor/DoctorSchedules/ScheduleWeekCalendar";
 import { getMyDoctorSchedules } from "@/services/doctorSchedule.services";
-import {
-  HydrationBoundary,
-  QueryClient,
-  dehydrate,
-} from "@tanstack/react-query";
+import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query";
 
 const MySchedulesPage = async ({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) => {
-  const queryParamsObjects = await searchParams;
+  const { view: rawView, ...rest } = await searchParams;
+  const view = rawView === "list" ? "list" : "calendar";
 
-  const queryString = Object.keys(queryParamsObjects)
-    .map((key) => {
-      const value = queryParamsObjects[key];
+  const header = (
+    <div className="flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <h1 className="text-xl font-semibold tracking-tight md:text-2xl">My Schedules</h1>
+        <p className="mt-0.5 text-[13px] text-muted-foreground">
+          Add the time slots patients can book, and remove free ones you can&apos;t take.
+        </p>
+      </div>
+      <ScheduleViewTabs view={view} />
+    </div>
+  );
 
-      if (value === undefined) {
-        return "";
-      }
+  if (view === "calendar") {
+    // the calendar loads its week in the browser (it needs the viewer's clock)
+    return (
+      <div className="space-y-5">
+        {header}
+        <ScheduleWeekCalendar />
+      </div>
+    );
+  }
 
-      if (Array.isArray(value)) {
-        return value
-          .map(
-            (item) => `${encodeURIComponent(key)}=${encodeURIComponent(item)}`,
-          )
-          .join("&");
-      }
-
-      return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
-    })
-    .filter(Boolean)
+  const queryString = Object.entries(rest)
+    .flatMap(([key, value]) =>
+      value === undefined
+        ? []
+        : (Array.isArray(value) ? value : [value]).map((item) => `${encodeURIComponent(key)}=${encodeURIComponent(item)}`),
+    )
     .join("&");
 
   const queryClient = new QueryClient();
-
   await queryClient.prefetchQuery({
     queryKey: ["my-doctor-schedules", queryString],
     queryFn: () => getMyDoctorSchedules(queryString),
-    staleTime: 1000 * 60 * 60,
-    gcTime: 1000 * 60 * 60 * 6,
+    staleTime: 60 * 1000,
   });
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <section className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="space-y-5">
+      {header}
+      <HydrationBoundary state={dehydrate(queryClient)}>
         <DoctorSchedulesTable initialQueryString={queryString} />
-      </section>
-    </HydrationBoundary>
+      </HydrationBoundary>
+    </div>
   );
 };
 
