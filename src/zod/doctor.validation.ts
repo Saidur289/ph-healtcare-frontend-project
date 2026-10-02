@@ -91,7 +91,7 @@ export const createDoctorFormZodSchema = z.object({
   designation: z
     .string()
     .trim()
-    .min(2, "Designation must be at least 2 characters")
+    .min(5, "Designation must be at least 5 characters")
     .max(50, "Designation must be at most 50 characters"),
 
   specialties: z
@@ -153,7 +153,8 @@ export const createDoctorServerZodSchema = z.object({
     appointmentFee: z.coerce
       .number({ error: "Appointment fee must be a number" })
       .int("Appointment fee must be a whole number")
-      .min(50, "Appointment fee must be at least 50"),
+      .min(50, "Appointment fee must be at least 50")
+      .max(1_000_000, "Appointment fee is too high"),
 
     qualification: z
       .string()
@@ -170,7 +171,7 @@ export const createDoctorServerZodSchema = z.object({
     designation: z
       .string()
       .trim()
-      .min(2, "Designation must be at least 2 characters")
+      .min(5, "Designation must be at least 5 characters")
       .max(50, "Designation must be at most 50 characters"),
   }),
 
@@ -251,7 +252,7 @@ export const editDoctorFormZodSchema = z.object({
   designation: z
     .string()
     .trim()
-    .min(2, "Designation must be at least 2 characters")
+    .min(5, "Designation must be at least 5 characters")
     .max(50, "Designation must be at most 50 characters"),
 
   specialties: z
@@ -350,7 +351,7 @@ export const updateDoctorServerZodSchema = z.object({
         z
           .string()
           .trim()
-          .min(2, "Designation must be at least 2 characters")
+          .min(5, "Designation must be at least 5 characters")
           .max(50, "Designation must be at most 50 characters")
           .optional(),
       ),

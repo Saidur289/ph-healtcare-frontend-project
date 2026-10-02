@@ -1,3 +1,4 @@
+import AdminPageHeader from "@/components/modules/Admin/shared/AdminPageHeader";
 import SchedulesTable from "@/components/modules/Admin/ScheduleManagement/SchedulesTable";
 import { getSchedules } from "@/services/schedule.services";
 import {
@@ -29,7 +30,6 @@ const SchedulesManagementsPage = async ({
     })
     .filter(Boolean)
     .join("&");
-  console.log("page.tsx schedules-management", queryString);
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery({
     queryKey: ["schedules", queryString],
@@ -39,9 +39,12 @@ const SchedulesManagementsPage = async ({
   });
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <SchedulesTable initialQueryString={queryString} />
-    </HydrationBoundary>
+    <div className="space-y-5">
+      <AdminPageHeader title="Schedules" description="Time slots doctors can open for booking." />
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <SchedulesTable initialQueryString={queryString} />
+      </HydrationBoundary>
+    </div>
   );
 };
 

@@ -25,6 +25,16 @@ const axiosInstance = async () => {
   });
   return instance;
 };
+// Logs method, path and status only. The axios error object also holds the request
+// headers (session cookies), so it must never be logged as a whole.
+const logApiError = (method: string, endpoint: string, error: unknown) => {
+  const status = (error as { response?: { status?: number } })?.response?.status;
+  // 4xx are expected (validation, auth) and shown to the user; log only real failures
+  if (!status || status >= 500) {
+    console.error(`[api] ${method} ${endpoint.split("?")[0]} failed${status ? ` (${status})` : ""}`);
+  }
+};
+
 export interface ApiRequestOptions {
   params?: Record<string, unknown>;
   headers?: Record<string, string>;
@@ -38,7 +48,7 @@ const httpGet = async <TData>(
     const response = await instance.get<ApiResponse<TData>>(endpoint, options);
     return response.data;
   } catch (error) {
-    console.log("Error fetching data");
+    logApiError("GET", endpoint, error);
     throw error;
   }
 };
@@ -56,7 +66,7 @@ const httpPost = async <TData>(
     );
     return response.data;
   } catch (error) {
-    console.log("Error creating data");
+    logApiError("POST", endpoint, error);
     throw error;
   }
 };
@@ -74,7 +84,7 @@ const httpPut = async <TData>(
     );
     return response.data;
   } catch (error) {
-    console.log("Error updating data");
+    logApiError("PUT", endpoint, error);
     throw error;
   }
 };
@@ -90,7 +100,7 @@ const httpDelete = async <TData>(
     );
     return response.data;
   } catch (error) {
-    console.log("Error deleting data");
+    logApiError("DELETE", endpoint, error);
     throw error;
   }
 };
@@ -108,7 +118,7 @@ const httpPatch = async <TData>(
     );
     return response.data;
   } catch (error) {
-    console.log("Error patching data");
+    logApiError("PATCH", endpoint, error);
     throw error;
   }
 };

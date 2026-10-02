@@ -17,61 +17,36 @@ export const bookAppointment = async (
   payload: IBookAppointmentPayload,
   idempotencyKey?: string,
 ) => {
-  try {
-    return await httpClient.post<IBookAppointmentResult>(
-      "/appointments/book-appointment",
-      payload,
-      idempotencyHeaders(idempotencyKey),
-    );
-  } catch (error) {
-    console.log("Error booking appointment", error);
-    throw error;
-  }
+  return await httpClient.post<IBookAppointmentResult>(
+    "/appointments/book-appointment",
+    payload,
+    idempotencyHeaders(idempotencyKey),
+  );
 };
 export const bookAppointmentWithPayLater = async (
   payload: IBookAppointmentPayload,
   idempotencyKey?: string,
 ) => {
-  try {
-    return await httpClient.post<IBookAppointmentResult>(
-      "/appointments/book-appointment-with-pay-later",
-      payload,
-      idempotencyHeaders(idempotencyKey),
-    );
-  } catch (error) {
-    console.log("Error booking appointment with pay later", error);
-    throw error;
-  }
+  return await httpClient.post<IBookAppointmentResult>(
+    "/appointments/book-appointment-with-pay-later",
+    payload,
+    idempotencyHeaders(idempotencyKey),
+  );
 };
 export const initiateAppointmentPayment = async (appointmentId: string) => {
-  try {
-    return await httpClient.post<IInitiatePaymentResult>(
-      `/appointments/initiate-payment/${appointmentId}`,
-      {},
-    );
-  } catch (error) {
-    console.log("Error initiating appointment payment", error);
-    throw error;
-  }
+  return await httpClient.post<IInitiatePaymentResult>(
+    `/appointments/initiate-payment/${appointmentId}`,
+    {},
+  );
 };
 export const getMyAppointments = async () => {
-  try {
-    return await httpClient.get<IAppointment[]>(
-      "/appointments/my-appointments",
-    );
-  } catch (error) {
-    console.log("Error fetching my appointments:", error);
-    throw error;
-  }
+  return await httpClient.get<IAppointment[]>(
+    "/appointments/my-appointments",
+  );
 };
 
 export const getMySingleAppointment = async (appointmentId: string) => {
-  try {
-    return await httpClient.get<IAppointment>(
-      `/appointments/my-single-appointment/${appointmentId}`,
-    );
-  } catch (error) {
-    console.log("Error fetching appointment details:", error);
-    throw error;
-  }
+  return await httpClient.get<IAppointment>(
+    `/appointments/my-single-appointment/${appointmentId}`,
+  );
 };

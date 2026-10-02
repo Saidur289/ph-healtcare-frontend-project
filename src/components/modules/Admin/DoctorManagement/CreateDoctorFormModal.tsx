@@ -124,6 +124,10 @@ const CreateDoctorFormModal = ({
       form.reset();
 
       void queryClient.invalidateQueries({ queryKey: ["doctors"] });
+      // related lists elsewhere in the app
+      void queryClient.invalidateQueries({ queryKey: ["admin-doctor-specialties"] });
+      void queryClient.invalidateQueries({ queryKey: ["admin-doctor-schedules"] });
+      void queryClient.invalidateQueries({ queryKey: ["admin-dashboard-data"] });
       void queryClient.refetchQueries({
         queryKey: ["doctors"],
         type: "active",

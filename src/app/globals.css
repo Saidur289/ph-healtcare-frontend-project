@@ -56,7 +56,8 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* "Pranovate" design tokens (see plan.md 8A). Light = the Dribbble shot; dark keeps the same hues. */
+/* "Pranovate" design tokens (see plan.md 8A). Light = the Dribbble shot; dark keeps the same hues.
+   Text/background pairs are tuned to WCAG AA (at least 4.5:1); re-check when changing a colour. */
 :root {
   --background: #f4f6f9;
   --foreground: #111827;
@@ -72,13 +73,13 @@
   --muted-foreground: #5b6472;
   --accent: #e8f0fc;
   --accent-foreground: #1250b0;
-  --destructive: #dc2626;
+  --destructive: #c42020;
   --border: #e5e7eb;
   --input: #e5e7eb;
   --ring: #1565d8;
-  --success: #16a34a;
-  --success-soft: #e7f6ec;
-  --teal: #0f9d8f;
+  --success: #15803d;
+  --success-soft: #f0faf3;
+  --teal: #0f766e;
   --teal-soft: #e0f5f2;
   --info-soft: #e8f0fc;
   --warning: #b45309;
@@ -107,8 +108,8 @@
   --card-foreground: #e5e7eb;
   --popover: #111b2b;
   --popover-foreground: #e5e7eb;
-  --primary: #3b82f6;
-  --primary-foreground: #ffffff;
+  --primary: #60a5fa;
+  --primary-foreground: #0a1220;
   --secondary: #1a2638;
   --secondary-foreground: #e5e7eb;
   --muted: #172234;
@@ -118,7 +119,7 @@
   --destructive: #f87171;
   --border: #223047;
   --input: #2a3a54;
-  --ring: #3b82f6;
+  --ring: #60a5fa;
   --success: #4ade80;
   --success-soft: #12301f;
   --teal: #2dd4bf;
@@ -134,7 +135,7 @@
   --chart-5: #f87171;
   --sidebar: #070f1c;
   --sidebar-foreground: #a9b5c6;
-  --sidebar-primary: #3b82f6;
+  --sidebar-primary: #2563eb;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #12223a;
   --sidebar-accent-foreground: #ffffff;

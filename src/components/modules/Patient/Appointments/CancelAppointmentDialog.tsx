@@ -16,12 +16,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { IAppointment } from "@/types/appointment.types";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { queryKeys } from "@/lib/queryKeys";
 
 // used by patients (until 2 h before) and doctors (any time before the visit)
 const CancelAppointmentDialog = ({ appointment, who = "patient" }: { appointment: IAppointment; who?: "patient" | "doctor" }) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [pending, startTransition] = useTransition();
@@ -35,6 +38,7 @@ const CancelAppointmentDialog = ({ appointment, who = "patient" }: { appointment
       toast.success(paid && who === "patient" ? `${result.message}. Your refund is on its way.` : result.message);
       setOpen(false);
       router.refresh();
+      void queryClient.invalidateQueries({ queryKey: queryKeys.notifications });
     });
 
   return (

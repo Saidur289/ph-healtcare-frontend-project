@@ -14,8 +14,10 @@ import { isSameDay } from "date-fns";
 import { CheckCircle2, FileText, Search, UserX, Video } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { queryKeys } from "@/lib/queryKeys";
 
 const NO_SHOW_AFTER_MS = 15 * 60 * 1000; // API rule
 
@@ -37,6 +39,7 @@ const tabOf = (a: IAppointment, now: number): TTab => {
 
 const DoctorAppointmentsList = ({ appointments }: { appointments: IAppointment[] }) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
@@ -71,6 +74,7 @@ const DoctorAppointmentsList = ({ appointments }: { appointments: IAppointment[]
       if (!result.success) return void toast.error(result.message);
       toast.success(result.message);
       router.refresh();
+      void queryClient.invalidateQueries({ queryKey: queryKeys.notifications });
     });
   };
 

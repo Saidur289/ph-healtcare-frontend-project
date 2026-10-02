@@ -45,7 +45,7 @@ const DeviceCheck = () => {
         </p>
       )}
       {state === "ok" ? (
-        <p className="flex items-center gap-1 text-sm text-green-700">
+        <p className="flex items-center gap-1 text-sm text-success">
           <CheckCircle2 className="h-4 w-4" /> Camera and microphone work.
         </p>
       ) : (

@@ -1,20 +1,24 @@
+import { Button } from "@/components/ui/button";
+import { SearchX } from "lucide-react";
 import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <h2 className="text-4xl font-bold text-gray-800 mb-4">
-        404 - Page Not Found
-      </h2>
-      <p className="text-gray-600 mb-8">
-        The page you are looking for does not exist.
-      </p>
-      <Link
-        href="/"
-        className="px-6 py-3 bg-blue-500 text-white rounded hover:bg-blue-600"
-      >
-        Go Home
-      </Link>
-    </div>
+    <main className="flex min-h-[70vh] flex-col items-center justify-center gap-4 px-4 text-center">
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-primary">
+        <SearchX className="h-6 w-6" aria-hidden />
+      </span>
+      <p className="text-sm font-semibold text-primary">404</p>
+      <h1 className="text-xl font-semibold">Page not found</h1>
+      <p className="max-w-md text-[13px] text-muted-foreground">The page you are looking for does not exist or was moved.</p>
+      <div className="flex gap-2">
+        <Button asChild>
+          <Link href="/">Go home</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link href="/consultation">Find a doctor</Link>
+        </Button>
+      </div>
+    </main>
   );
 }

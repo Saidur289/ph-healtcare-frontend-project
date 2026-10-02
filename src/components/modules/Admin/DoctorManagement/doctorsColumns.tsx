@@ -1,4 +1,5 @@
 import DateCell from "@/components/shared/cell/DateCell";
+import { formatTaka } from "@/lib/appointmentUtils";
 import UserInfoCell from "@/components/shared/cell/UserInfoCell";
 import { Badge } from "@/components/ui/badge";
 import { IDoctors } from "@/types/doctor.types";
@@ -69,8 +70,8 @@ export const doctorColumn: ColumnDef<IDoctors>[] = [
     accessorKey: "appointmentFee",
     header: "Appointment Fee",
     cell: ({ row }) => (
-      <span className="text-sm font-semibold text-green-600">
-        {row.original.appointmentFee.toFixed(2) || "N/A"}
+      <span className="text-sm font-semibold text-success">
+        {formatTaka(row.original.appointmentFee)}
       </span>
     ),
   },

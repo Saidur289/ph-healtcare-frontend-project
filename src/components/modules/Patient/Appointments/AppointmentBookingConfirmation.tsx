@@ -1,4 +1,5 @@
 "use client";
+import { formatTaka } from "@/lib/appointmentUtils";
 
 import {
   bookAppointmentAction,
@@ -156,7 +157,7 @@ const AppointmentBookingConfirmation = ({
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      <div className="rounded-2xl border bg-linear-to-r from-cyan-50 via-white to-blue-50 p-6">
+      <div className="rounded-xl border bg-card p-6 shadow-xs">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold tracking-tight">
@@ -194,10 +195,10 @@ const AppointmentBookingConfirmation = ({
               <div className="min-w-0 space-y-1">
                 <p className="text-lg font-semibold">{doctorName}</p>
                 <p className="text-sm text-muted-foreground">
-                  {doctorDesignation || "N/A"}
+                  {doctorDesignation || "Doctor"}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {doctorWorkingPlace || "N/A"}
+                  {doctorWorkingPlace || "—"}
                 </p>
               </div>
             </div>
@@ -239,7 +240,7 @@ const AppointmentBookingConfirmation = ({
             <div className="rounded-2xl border bg-muted/20 p-4">
               <p className="text-sm text-muted-foreground">Consultation fee</p>
               <p className="mt-1 text-3xl font-semibold">
-                ৳{appointmentFee?.toFixed(2) ?? "0.00"}
+                {formatTaka(appointmentFee)}
               </p>
             </div>
 

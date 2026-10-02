@@ -49,7 +49,6 @@ const SchedulesTable = ({
     defaultLimit: DEFAULT_LIMIT,
   });
   const queryString = queryStringFromUrl || initialQueryString;
-  console.log("page.tsx schedules-management", queryString);
   const { searchTermFromUrl, handleDebouncedSearchChange } =
     useServerManagedDataTableSearch({ searchParams, updateParams });
   const {

@@ -70,7 +70,7 @@ const PaymentResultBanner = ({
   }
   if (state === "paid") {
     return (
-      <Alert className="mb-4 border-green-600/40 text-green-700">
+      <Alert className="mb-4 border-success/40 text-success">
         <CheckCircle2 className="h-4 w-4" />
         <AlertTitle>Payment successful</AlertTitle>
         <AlertDescription>

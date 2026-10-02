@@ -67,6 +67,9 @@ const CreateScheduleFormModal = () => {
       form.reset();
 
       void queryClient.invalidateQueries({ queryKey: ["schedules"] });
+      // related lists elsewhere in the app
+      void queryClient.invalidateQueries({ queryKey: ["bookable-schedules"] });
+      void queryClient.invalidateQueries({ queryKey: ["admin-doctor-schedules"] });
       void queryClient.refetchQueries({
         queryKey: ["schedules"],
         type: "active",

@@ -1,3 +1,4 @@
+import AdminPageHeader from "@/components/modules/Admin/shared/AdminPageHeader";
 import DoctorTable from "@/components/modules/Admin/DoctorManagement/DoctorTable";
 import {
   getAllSpecialties,
@@ -60,9 +61,12 @@ const DoctorsManagementsPage = async ({
     gcTime: 1000 * 60 * 60 * 24, // 1 days
   });
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <DoctorTable initialQueryString={queryString} />
-    </HydrationBoundary>
+    <div className="space-y-5">
+      <AdminPageHeader title="Doctors" description="Add doctors, edit their details and fees, and remove accounts." />
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <DoctorTable initialQueryString={queryString} />
+      </HydrationBoundary>
+    </div>
   );
 };
 

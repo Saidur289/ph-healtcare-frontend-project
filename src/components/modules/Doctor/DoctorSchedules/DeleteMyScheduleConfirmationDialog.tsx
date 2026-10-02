@@ -74,6 +74,9 @@ const DeleteMyScheduleConfirmationDialog = ({
     onOpenChange(false);
 
     void queryClient.invalidateQueries({ queryKey: ["my-doctor-schedules"] });
+    // related lists elsewhere in the app
+    void queryClient.invalidateQueries({ queryKey: ["bookable-schedules"] });
+    void queryClient.invalidateQueries({ queryKey: ["consultation-booking-doctor"] });
     void queryClient.refetchQueries({
       queryKey: ["my-doctor-schedules"],
       type: "active",

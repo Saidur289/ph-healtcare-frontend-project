@@ -42,8 +42,11 @@ const DataTableSearch = ({
     <div className="relative w-full md:max-w-sm">
       <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-1/2 " />
       <Input
+        type="search"
         value={value}
         placeholder={placeholder}
+        aria-label={placeholder ?? "Search"}
+        maxLength={100}
         className="h-9 pr-9 pl-9"
         onChange={(e) => setValue(e.target.value)}
         disabled={isLoading}
@@ -56,8 +59,9 @@ const DataTableSearch = ({
           className="absolute top-1/2 right-1 -translate-y-1/2"
           onClick={handleClear}
           disabled={isLoading}
+          aria-label="Clear search"
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="h-3.5 w-3.5" aria-hidden />
         </Button>
       )}
     </div>

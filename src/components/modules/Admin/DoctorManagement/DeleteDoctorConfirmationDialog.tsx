@@ -47,6 +47,10 @@ const DeleteDoctorConfirmationDialog = ({
     toast.success(result.message || "Doctor deleted successfully");
     onOpenChange(false);
     void queryClient.invalidateQueries({ queryKey: ["doctors"] });
+    // related lists elsewhere in the app
+    void queryClient.invalidateQueries({ queryKey: ["admin-doctor-specialties"] });
+    void queryClient.invalidateQueries({ queryKey: ["admin-doctor-schedules"] });
+    void queryClient.invalidateQueries({ queryKey: ["admin-dashboard-data"] });
     void queryClient.refetchQueries({ queryKey: ["doctors"], type: "active" });
     router.refresh();
   };

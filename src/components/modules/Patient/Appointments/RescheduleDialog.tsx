@@ -18,12 +18,15 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { queryKeys } from "@/lib/queryKeys";
 
 // pick another free slot of the same doctor (API: PATCH /appointments/reschedule/:id)
 const RescheduleDialog = ({ appointment }: { appointment: IAppointment }) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState("");
   const [pending, startTransition] = useTransition();
@@ -61,6 +64,7 @@ const RescheduleDialog = ({ appointment }: { appointment: IAppointment }) => {
       setOpen(false);
       setSelected("");
       router.refresh();
+      void queryClient.invalidateQueries({ queryKey: queryKeys.notifications });
     });
 
   return (
