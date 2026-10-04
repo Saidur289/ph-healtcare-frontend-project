@@ -19,20 +19,20 @@ const HeroSearch = () => {
     <form
       role="search"
       onSubmit={submit}
-      className="flex w-full max-w-xl items-center gap-2 rounded-xl border bg-card p-1.5 shadow-xs focus-within:border-ring"
+      className="flex w-full max-w-xl items-center gap-2 rounded-md border border-foreground/25 bg-card p-1.5 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring"
     >
-      <Search className="ml-2 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+      <Search className="ml-2 h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
       <input
+        id="hero-search"
         type="search"
         value={term}
         onChange={(e) => setTerm(e.target.value)}
         maxLength={100}
-        placeholder="Doctor name, specialty or hospital…"
-        aria-label="Search doctors"
-        className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        placeholder="e.g. cardiology or a doctor's name"
+        className="h-11 min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
       />
-      <Button type="submit" className="h-10 px-5">
-        Search
+      <Button type="submit" className="h-11 rounded-md px-5 text-base">
+        Find a doctor
       </Button>
     </form>
   );
