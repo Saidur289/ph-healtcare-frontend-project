@@ -6,6 +6,7 @@ import {
   verifyEmailZodSchema,
 } from "@/zod/auth.validation";
 import { redirect } from "next/navigation";
+import { setPendingEmail } from "@/lib/pendingEmail";
 
 type TActionResult = { success: boolean; message: string };
 
@@ -25,7 +26,9 @@ export const verifyEmailAction = async (
     console.error("Auth API request failed:", error);
     return { success: false, message: "Could not reach the server. Please try again." };
   }
-  redirect(`/login?verified=1&email=${encodeURIComponent(parsed.data.email)}`);
+  // keeps the email for the login form prefill (cookie, not URL)
+  await setPendingEmail(parsed.data.email);
+  redirect("/login?verified=1");
 };
 
 export const resendVerificationOtpAction = async (

@@ -2,6 +2,7 @@
 import { callAuthApi } from "@/services/auth.service";
 import { emailOnlyZodSchema } from "@/zod/auth.validation";
 import { redirect } from "next/navigation";
+import { setPendingEmail } from "@/lib/pendingEmail";
 
 type TActionResult = { success: boolean; message: string };
 
@@ -22,5 +23,6 @@ export const forgotPasswordAction = async (
     console.error("Auth API request failed:", error);
     return { success: false, message: "Could not reach the server. Please try again." };
   }
-  redirect(`/reset-password?email=${encodeURIComponent(parsed.data.email)}`);
+  await setPendingEmail(parsed.data.email);
+  redirect("/reset-password");
 };

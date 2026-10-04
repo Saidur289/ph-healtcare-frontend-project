@@ -26,7 +26,8 @@ export interface IAdminAppointment {
     id: string;
     amount: number;
     status: PaymentStatus;
-    invoiceUrl?: string | null;
+    // true when an invoice exists (opened via /files/invoices/:paymentId)
+    invoiceUrl?: boolean | null;
     invoiceNumber?: string | null;
     paidAt?: string | null;
     refundedAt?: string | null;
@@ -38,7 +39,7 @@ export interface IAdminPayment {
   amount: number;
   status: PaymentStatus;
   invoiceNumber?: string | null;
-  invoiceUrl?: string | null;
+  invoiceUrl?: boolean | null;
   paidAt?: string | null;
   refundedAt?: string | null;
   createdAt: string;

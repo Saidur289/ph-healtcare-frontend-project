@@ -21,7 +21,8 @@ export interface IPrescription {
   followUpDate: string;
   instructions: string;
   medicines: IMedicine[];
-  pdfUrl?: string | null;
+  // true when the PDF exists (opened via /files/prescriptions/:id)
+  pdfUrl?: boolean | null;
   createdAt: string;
   patient?: { id: string; name: string; email: string };
   doctor?: { id: string; name: string; email: string; designation?: string };

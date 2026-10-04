@@ -1,7 +1,8 @@
 "use server";
 
 import { getUserInfo } from "@/services/auth.service";
-import { patchMyProfile, patchPatientRecords } from "@/services/profile.services";
+import { deleteMyAccount, patchMyProfile, patchPatientRecords } from "@/services/profile.services";
+import { clearAuthCookies } from "@/lib/cookieUtils";
 import { BLOOD_GROUPS } from "@/types/profile.types";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -166,4 +167,21 @@ export const deleteReportAction = async (reportId: string): Promise<TResult> => 
   } catch (error) {
     return { success: false, message: apiMessage(error, "Could not delete the report") };
   }
+};
+
+// Patient account deletion (the API anonymizes the data and ends every session)
+export const deleteMyAccountAction = async (input: { password?: string; confirm?: string }): Promise<TResult> => {
+  if (!(await requirePatient())) return { success: false, message: "Only patient accounts can be deleted here" };
+  const parsed = z
+    .object({ password: z.string().min(1).max(128).optional(), confirm: z.literal("DELETE").optional() })
+    .refine((v) => v.password || v.confirm, "Enter your password")
+    .safeParse({ password: input.password || undefined, confirm: input.confirm || undefined });
+  if (!parsed.success) return { success: false, message: parsed.error.issues[0]?.message ?? "Enter your password" };
+  try {
+    await deleteMyAccount(parsed.data);
+  } catch (error) {
+    return { success: false, message: apiMessage(error, "Your account could not be deleted") };
+  }
+  await clearAuthCookies();
+  return { success: true, message: "Your account has been deleted" };
 };

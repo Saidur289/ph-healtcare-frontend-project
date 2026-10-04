@@ -31,12 +31,13 @@ const RegisterForm = () => {
       email: "",
       name: "",
       password: "",
+      acceptTerms: false as boolean,
     },
     onSubmit: async ({ value }) => {
       setServerError(null);
       try {
         // on success the action redirects to /verify-email
-        const result = (await mutateAsync(value)) as any;
+        const result = (await mutateAsync({ ...value, acceptTerms: value.acceptTerms as true })) as any;
         if (result && !result.success) {
           setServerError(result.message || "Registration failed");
         }
@@ -119,6 +120,40 @@ const RegisterForm = () => {
                   </Button>
                 }
               />
+            )}
+          </form.Field>
+
+          <form.Field name="acceptTerms" validators={{ onChange: registerZodSchema.shape.acceptTerms, onSubmit: registerZodSchema.shape.acceptTerms }}>
+            {(field) => (
+              <div className="space-y-1">
+                <label className="flex items-start gap-2 text-[13px] leading-snug">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5 h-4 w-4 accent-[var(--primary)]"
+                    checked={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.checked)}
+                    onBlur={field.handleBlur}
+                    aria-invalid={field.state.meta.errors.length > 0}
+                    aria-labelledby="accept-terms-label"
+                  />
+                  <span id="accept-terms-label">
+                    I agree to the{" "}
+                    <Link href="/privacy" target="_blank" className="font-medium text-primary hover:underline">
+                      privacy policy
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="/terms" target="_blank" className="font-medium text-primary hover:underline">
+                      terms of use
+                    </Link>
+                    , including how my health information is stored.
+                  </span>
+                </label>
+                {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
+                  <p className="text-xs text-destructive">
+                    {String((field.state.meta.errors[0] as { message?: string })?.message ?? field.state.meta.errors[0])}
+                  </p>
+                )}
+              </div>
             )}
           </form.Field>
 

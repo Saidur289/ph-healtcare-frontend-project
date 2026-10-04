@@ -48,6 +48,8 @@ export const registerZodSchema = z.object({
     .max(60, "Name must be at most 60 characters long"),
   email: emailSchema,
   password: passwordSchema,
+  // same rule as the API: consent is required to create an account
+  acceptTerms: z.literal(true, "Please accept the privacy policy and terms"),
 });
 
 export const verifyEmailZodSchema = z.object({

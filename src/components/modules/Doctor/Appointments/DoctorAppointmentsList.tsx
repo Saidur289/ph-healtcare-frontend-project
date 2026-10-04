@@ -179,7 +179,7 @@ const DoctorAppointmentsList = ({ appointments }: { appointments: IAppointment[]
                     )}
                     {a.prescription?.pdfUrl && (
                       <Button asChild size="sm" variant="ghost">
-                        <a href={a.prescription.pdfUrl} target="_blank" rel="noopener noreferrer">
+                        <a href={`/files/prescriptions/${a.prescription.id}`} target="_blank" rel="noopener noreferrer">
                           <FileText className="h-4 w-4" aria-hidden /> Prescription PDF
                         </a>
                       </Button>

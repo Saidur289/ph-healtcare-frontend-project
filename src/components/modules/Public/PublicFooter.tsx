@@ -16,6 +16,8 @@ const COLUMNS = [
       { title: "Log in", href: "/login" },
       { title: "Forgot password", href: "/forgot-password" },
       { title: "How it works", href: "/#how-it-works" },
+      { title: "Privacy policy", href: "/privacy" },
+      { title: "Terms of use", href: "/terms" },
     ],
   },
 ];

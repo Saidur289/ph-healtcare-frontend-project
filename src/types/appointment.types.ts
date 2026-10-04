@@ -30,7 +30,8 @@ export interface IAppointmentPayment {
   amount?: number;
   transactionId?: string;
   status?: PaymentStatus;
-  invoiceUrl?: string;
+  // true when an invoice exists (opened via /files/invoices/:paymentId)
+  invoiceUrl?: boolean;
 }
 export interface IAppointment {
   id: string;
@@ -48,7 +49,7 @@ export interface IAppointment {
   payment?: IAppointmentPayment;
   // present when one exists (lists only)
   review?: { id: string; rating: number } | null;
-  prescription?: { id: string; pdfUrl?: string | null } | null;
+  prescription?: { id: string; pdfUrl?: boolean | null } | null;
 }
 export interface IBookAppointmentPayload {
   doctorId: string;

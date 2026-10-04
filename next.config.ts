@@ -25,6 +25,8 @@ const nextConfig: NextConfig = {
     return [
       // every page except the call page (which gets its own Permissions-Policy below)
       { source: "/((?!consultation/room/).*)", headers: securityHeaders },
+      // signed medical-file redirects: never pass this URL on as a Referer (later rule wins)
+      { source: "/files/:path*", headers: [{ key: "Referrer-Policy", value: "no-referrer" }] },
       {
         // the video call: this page and the Daily.co iframe may use camera and microphone
         source: "/consultation/room/:path*",

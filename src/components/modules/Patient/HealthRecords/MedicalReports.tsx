@@ -72,7 +72,7 @@ const MedicalReports = ({ reports }: { reports: IMedicalReport[] }) => {
       ) : (
         <ul className="divide-y rounded-lg border">
           {reports.map((report) => {
-            const isPdf = report.reportLink.toLowerCase().includes(".pdf") || report.reportName.toLowerCase().endsWith(".pdf");
+            const isPdf = report.reportName.toLowerCase().endsWith(".pdf");
             const Icon = isPdf ? FileText : ImageIcon;
             return (
               <li key={report.id} className="flex items-center gap-3 p-3">
@@ -81,7 +81,7 @@ const MedicalReports = ({ reports }: { reports: IMedicalReport[] }) => {
                 </span>
                 <div className="min-w-0 flex-1">
                   <a
-                    href={report.reportLink}
+                    href={`/files/reports/${report.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block truncate text-[13px] font-medium hover:text-primary hover:underline"

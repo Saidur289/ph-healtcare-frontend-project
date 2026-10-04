@@ -79,9 +79,9 @@ const AdminAppointmentsTable = ({ initialQueryString }: { initialQueryString: st
     ]}
     rowActions={(a) => (
       <>
-        {a.payment?.invoiceUrl && (
+        {a.payment?.invoiceUrl && a.payment.id && (
           <Button asChild size="sm" variant="ghost" className="h-8">
-            <a href={a.payment.invoiceUrl} target="_blank" rel="noopener noreferrer" aria-label="Open invoice">
+            <a href={`/files/invoices/${a.payment.id}`} target="_blank" rel="noopener noreferrer" aria-label="Open invoice">
               <Receipt className="h-4 w-4" aria-hidden />
             </a>
           </Button>

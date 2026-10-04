@@ -84,7 +84,7 @@ const AdminPaymentsTable = ({ initialQueryString }: { initialQueryString: string
       <>
         {p.invoiceUrl && (
           <Button asChild size="sm" variant="outline" className="h-8">
-            <a href={p.invoiceUrl} target="_blank" rel="noopener noreferrer">
+            <a href={`/files/invoices/${p.id}`} target="_blank" rel="noopener noreferrer">
               <Receipt className="h-4 w-4" aria-hidden /> Invoice
             </a>
           </Button>

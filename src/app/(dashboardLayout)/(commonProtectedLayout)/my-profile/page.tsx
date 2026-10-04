@@ -1,3 +1,4 @@
+import PrivacyCard from "@/components/modules/Profile/PrivacyCard";
 import ProfileForm from "@/components/modules/Profile/ProfileForm";
 import ErrorState from "@/components/shared/ErrorState";
 import { Card } from "@/components/ui/card";
@@ -26,6 +27,12 @@ const MyProfilePage = async () => {
         <Card className="p-5 shadow-xs xl:col-span-2">
           <ProfileForm data={data} />
         </Card>
+
+        {data.role === "PATIENT" && (
+          <div className="h-fit">
+            <PrivacyCard hasPassword={data.hasPassword !== false} />
+          </div>
+        )}
 
         {doctor && (
           <Card className="h-fit gap-3 p-5 shadow-xs">

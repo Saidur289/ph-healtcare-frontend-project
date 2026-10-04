@@ -1,3 +1,4 @@
+import { getPendingEmail } from "@/lib/pendingEmail";
 import LoginForm from "@/components/modules/Auth/LoginForm";
 
 interface LoginParams {
@@ -7,7 +8,6 @@ interface LoginParams {
     reset?: string;
     expired?: string;
     error?: string;
-    email?: string;
   }>;
 }
 
@@ -36,7 +36,7 @@ const LoginPage = async ({ searchParams }: LoginParams) => {
       redirectPath={param.redirect}
       notice={notice}
       initialError={error}
-      initialEmail={param.email}
+      initialEmail={await getPendingEmail()}
     />
   );
 };

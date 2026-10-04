@@ -4,6 +4,7 @@ import { ApiErrorResponse } from "@/types/api.types";
 import { IRegisterResponse } from "@/types/auth.types";
 import { IRegisterPayload, registerZodSchema } from "@/zod/auth.validation";
 import { redirect } from "next/navigation";
+import { setPendingEmail } from "@/lib/pendingEmail";
 
 // Registration does not log the user in: they verify the email, then log in.
 export const registerAction = async (
@@ -25,5 +26,7 @@ export const registerAction = async (
     console.error("Auth API request failed:", error);
     return { success: false, message: "Could not reach the server. Please try again." };
   }
-  redirect(`/verify-email?email=${encodeURIComponent(parsePayload.data.email)}&sent=1`);
+  // the email travels in a short-lived httpOnly cookie, not the URL (lib/pendingEmail.ts)
+  await setPendingEmail(parsePayload.data.email);
+  redirect("/verify-email?sent=1");
 };

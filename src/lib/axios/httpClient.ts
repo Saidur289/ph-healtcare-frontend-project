@@ -38,6 +38,8 @@ const logApiError = (method: string, endpoint: string, error: unknown) => {
 export interface ApiRequestOptions {
   params?: Record<string, unknown>;
   headers?: Record<string, string>;
+  // request body for DELETE requests
+  data?: unknown;
 }
 const httpGet = async <TData>(
   endpoint: string,

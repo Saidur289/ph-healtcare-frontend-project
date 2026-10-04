@@ -10,6 +10,7 @@ import { ApiErrorResponse } from "@/types/api.types";
 import { ILoginResponse } from "@/types/auth.types";
 import { ILoginPayload, loginZodSchema } from "@/zod/auth.validation";
 import { redirect } from "next/navigation";
+import { clearPendingEmail, setPendingEmail } from "@/lib/pendingEmail";
 
 export const loginAction = async (
   payload: ILoginPayload,
@@ -29,13 +30,15 @@ export const loginAction = async (
     if (!result.ok || !result.data?.user) {
       if (result.message === "Email is not verified") {
         // the API has just emailed a new code
-        target = `/verify-email?email=${encodeURIComponent(parsePayload.data.email)}`;
+        await setPendingEmail(parsePayload.data.email);
+        target = "/verify-email";
       } else {
         return { success: false, message: result.message };
       }
     } else {
       // tokens arrive as Set-Cookie headers from the API; copy them to this site
       await applyAuthCookies(result.setCookies);
+      await clearPendingEmail();
       const { role, needPasswordChange } = result.data.user;
       if (needPasswordChange) {
         target = "/change-password?required=1";

@@ -198,7 +198,7 @@ const PatientAppointmentsList = ({ appointments, feedbackType, feedbackMessage }
                     {a.prescription && (
                       <Button asChild size="sm" variant="outline">
                         {a.prescription.pdfUrl ? (
-                          <a href={a.prescription.pdfUrl} target="_blank" rel="noopener noreferrer">
+                          <a href={`/files/prescriptions/${a.prescription.id}`} target="_blank" rel="noopener noreferrer">
                             <FileText className="h-4 w-4" aria-hidden /> Prescription
                           </a>
                         ) : (
@@ -208,9 +208,9 @@ const PatientAppointmentsList = ({ appointments, feedbackType, feedbackMessage }
                         )}
                       </Button>
                     )}
-                    {a.payment?.invoiceUrl && (
+                    {a.payment?.invoiceUrl && a.payment.id && (
                       <Button asChild size="sm" variant="ghost">
-                        <a href={a.payment.invoiceUrl} target="_blank" rel="noopener noreferrer">
+                        <a href={`/files/invoices/${a.payment.id}`} target="_blank" rel="noopener noreferrer">
                           <Receipt className="h-4 w-4" aria-hidden /> Invoice
                         </a>
                       </Button>

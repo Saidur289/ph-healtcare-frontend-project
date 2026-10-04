@@ -45,7 +45,7 @@ const PrescriptionList = ({ prescriptions, viewer }: { prescriptions: IPrescript
               </div>
               {p.pdfUrl ? (
                 <Button asChild size="sm" variant="outline">
-                  <a href={p.pdfUrl} target="_blank" rel="noopener noreferrer">
+                  <a href={`/files/prescriptions/${p.id}`} target="_blank" rel="noopener noreferrer">
                     <Download className="h-4 w-4" aria-hidden /> PDF
                   </a>
                 </Button>

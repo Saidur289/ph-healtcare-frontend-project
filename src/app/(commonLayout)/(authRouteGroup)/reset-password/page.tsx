@@ -1,10 +1,12 @@
+import { getPendingEmail } from "@/lib/pendingEmail";
 import ResetPasswordForm from "@/components/modules/Auth/ResetPasswordForm";
 
 interface ResetPasswordParams {
-  searchParams: Promise<{ email?: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
 }
 const ResetPasswordPage = async ({ searchParams }: ResetPasswordParams) => {
-  const { email } = await searchParams;
+  await searchParams;
+  const email = await getPendingEmail();
   return <ResetPasswordForm email={email} />;
 };
 

@@ -39,7 +39,8 @@ export interface IHealthData {
 export interface IMedicalReport {
   id: string;
   reportName: string;
-  reportLink: string;
+  // true when a file exists (the file itself is opened via /files/reports/:id)
+  reportLink: boolean;
   createdAt: string;
 }
 
@@ -51,6 +52,8 @@ export interface IMyProfile {
   role: UserRole;
   image?: string | null;
   createdAt: string;
+  // false for Google-only accounts
+  hasPassword?: boolean;
   profile: {
     id: string;
     name: string;

@@ -16,3 +16,7 @@ export const patchMyProfile = async (form: FormData) => httpClient.patch<IMyProf
 // FormData: "data" (JSON with patientHealthData / patientMedicalReport) + optional "medicalReports" file
 export const patchPatientRecords = async (form: FormData) =>
   httpClient.patch<unknown>("/patients/update-profile", form, multipart);
+
+// account deletion: the password (email accounts) or "DELETE" (Google accounts)
+export const deleteMyAccount = async (body: { password?: string; confirm?: "DELETE" }) =>
+  httpClient.delete<null>("/profile/me", { data: body });
