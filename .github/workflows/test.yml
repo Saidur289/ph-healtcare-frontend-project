@@ -1,0 +1,59 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      - run: npm run test:coverage
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # client and API side by side: client/ and server/
+      - uses: actions/checkout@v4
+        with:
+          path: client
+      - uses: actions/checkout@v4
+        with:
+          repository: Saidur289/ph-healtcare-backend-project
+          # the API branch to test against (set the E2E_SERVER_REF repository variable to change it)
+          ref: ${{ vars.E2E_SERVER_REF || 'dev-branch-part-6' }}
+          # needed only if the backend repository is private (a token with read access)
+          token: ${{ secrets.SERVER_REPO_TOKEN || github.token }}
+          path: server
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install API
+        working-directory: server
+        run: |
+          npm ci
+          DOTENV_CONFIG_PATH=tests/test.env npx prisma generate
+      - name: Install app + browser
+        working-directory: client
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      # Playwright starts the API (throwaway Postgres, fake Stripe/Daily) and a production build
+      - name: End-to-end tests
+        working-directory: client
+        run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: client/playwright-report
