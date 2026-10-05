@@ -1,0 +1,11 @@
+# Secret scanning (CI "secrets" job). Default rules, but the fake test-only values are allowed.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "fake, test-only values used by the unit and e2e tests"
+paths = [
+  '''^tests/''',
+  '''^vitest\.config\.mts$''',
+  '''^playwright\.config\.ts$''',
+]

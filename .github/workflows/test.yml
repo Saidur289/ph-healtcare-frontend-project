@@ -1,4 +1,7 @@
-name: test
+name: ci
+
+# On every push / PR: install -> type-check -> lint -> test -> build, plus a dependency audit, a
+# secret scan and the end-to-end tests. Make "ci" a required check to block merging when it fails.
 
 on:
   push:
@@ -18,6 +21,20 @@ jobs:
       - run: npx tsc --noEmit
       - run: npm run lint
       - run: npm run test:coverage
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_API_BASE_URL: http://localhost:5000/api/v1
+      - run: npm audit --omit=dev --audit-level=high
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # scan the whole history
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   e2e:
     runs-on: ubuntu-latest
@@ -42,7 +59,7 @@ jobs:
         working-directory: server
         run: |
           npm ci
-          DOTENV_CONFIG_PATH=tests/test.env npx prisma generate
+          npx prisma generate
       - name: Install app + browser
         working-directory: client
         run: |
