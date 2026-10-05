@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { IMedicalReport } from "@/types/profile.types";
 import { format } from "date-fns";
 import { FileText, ImageIcon, Loader2, Trash2, Upload } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { staggerContainer, staggerItem } from "@/lib/motion";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -70,12 +72,14 @@ const MedicalReports = ({ reports }: { reports: IMedicalReport[] }) => {
       {reports.length === 0 ? (
         <p className="rounded-lg border border-dashed p-6 text-center text-[13px] text-muted-foreground">No reports uploaded yet.</p>
       ) : (
-        <ul className="divide-y rounded-lg border">
+        // rows cascade in; a deleted report fades out and the rest close the gap smoothly
+        <motion.ul className="divide-y rounded-lg border" variants={staggerContainer} initial="hidden" animate="show">
+          <AnimatePresence initial={false}>
           {reports.map((report) => {
             const isPdf = report.reportName.toLowerCase().endsWith(".pdf");
             const Icon = isPdf ? FileText : ImageIcon;
             return (
-              <li key={report.id} className="flex items-center gap-3 p-3">
+              <motion.li key={report.id} layout variants={staggerItem} exit={{ opacity: 0, x: -12, transition: { duration: 0.15 } }} className="flex items-center gap-3 p-3">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent text-primary">
                   <Icon className="h-4 w-4" aria-hidden />
                 </span>
@@ -99,10 +103,11 @@ const MedicalReports = ({ reports }: { reports: IMedicalReport[] }) => {
                 >
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
-              </li>
+              </motion.li>
             );
           })}
-        </ul>
+          </AnimatePresence>
+        </motion.ul>
       )}
 
       <AlertDialog open={Boolean(toDelete)} onOpenChange={(open) => !open && !deleting && setToDelete(null)}>

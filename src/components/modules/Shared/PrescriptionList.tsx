@@ -1,3 +1,4 @@
+import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import EmptyState from "@/components/shared/EmptyState";
 import StatusPill from "@/components/shared/StatusPill";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -23,11 +24,12 @@ const PrescriptionList = ({ prescriptions, viewer }: { prescriptions: IPrescript
     );
   }
   return (
-    <ul className="space-y-3">
+    // prescriptions cascade in (glass cards in the portals)
+    <Stagger as="ul" className="space-y-3">
       {prescriptions.map((p) => {
         const name = viewer === "DOCTOR" ? p.patient?.name ?? "Patient" : `Dr. ${p.doctor?.name ?? ""}`;
         return (
-          <li key={p.id} className="rounded-xl border bg-card p-4 shadow-xs">
+          <StaggerItem as="li" key={p.id} className="glass rounded-xl p-4">
             <div className="flex flex-wrap items-start gap-3">
               <Avatar className="h-10 w-10">
                 <AvatarFallback className="bg-accent text-xs font-semibold text-accent-foreground">
@@ -82,10 +84,10 @@ const PrescriptionList = ({ prescriptions, viewer }: { prescriptions: IPrescript
               </div>
             )}
             {p.instructions && <p className="mt-3 whitespace-pre-line text-[13px] text-muted-foreground">{p.instructions}</p>}
-          </li>
+          </StaggerItem>
         );
       })}
-    </ul>
+    </Stagger>
   );
 };
 

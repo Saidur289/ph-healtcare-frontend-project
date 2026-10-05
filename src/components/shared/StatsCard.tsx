@@ -1,3 +1,4 @@
+import { TiltCard } from "@/components/motion/TiltCard";
 import { Card } from "@/components/ui/card";
 import { getIconComponent } from "@/lib/iconMapper";
 import { cn } from "@/lib/utils";
@@ -21,16 +22,18 @@ interface StatsCardProps {
   trend?: { diff: number; label: string; display?: string };
   description?: string;
   className?: string;
+  // 3D parallax tilt toward the pointer (high-value dashboard numbers)
+  tilt?: boolean;
 }
 
 // Design card: label top-left, tinted icon square top-right, big number, trend line.
-const StatsCard = ({ value, title, iconName, tone = "blue", trend, description, className }: StatsCardProps) => {
+const StatsCard = ({ value, title, iconName, tone = "blue", trend, description, className, tilt = false }: StatsCardProps) => {
   const up = trend ? trend.diff > 0 : false;
   const down = trend ? trend.diff < 0 : false;
   const TrendIcon = up ? ArrowUpRight : down ? ArrowDownRight : Minus;
 
-  return (
-    <Card className={cn("gap-3 p-5 shadow-xs", className)}>
+  const card = (
+    <Card className={cn("h-full gap-3 p-5 shadow-xs", className)}>
       <div className="flex items-start justify-between gap-3">
         <p className="text-[13px] font-medium text-muted-foreground">{title}</p>
         <span className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg", TONES[tone])}>
@@ -55,6 +58,7 @@ const StatsCard = ({ value, title, iconName, tone = "blue", trend, description, 
       )}
     </Card>
   );
+  return tilt ? <TiltCard className="h-full rounded-xl">{card}</TiltCard> : card;
 };
 
 export default StatsCard;

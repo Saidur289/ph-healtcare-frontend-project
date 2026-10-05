@@ -1,22 +1,18 @@
 "use client";
 
-import { getDoctorById } from "@/services/doctor.services";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { MorphDialog } from "@/components/motion/MorphDialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { springs, staggerContainer, staggerItem } from "@/lib/motion";
+import { cn } from "@/lib/utils";
+import { getDoctorById } from "@/services/doctor.services";
 import { type IDoctorScheduleItem } from "@/types/doctor.types";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { CalendarPlus, Clock3, Loader2 } from "lucide-react";
+import { CalendarPlus, Check, Clock3, Loader2 } from "lucide-react";
+import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -43,6 +39,7 @@ const formatDateTime = (value?: string | Date | null) => {
   return format(dateValue, "EEE, MMM dd • hh:mm a");
 };
 
+// The "Book Appointment" button grows into the slot picker (MorphDialog) and shrinks back on close.
 const BookAppointmentModal = ({
   doctorId,
   doctorName,
@@ -127,106 +124,118 @@ const BookAppointmentModal = ({
   const isBusy = isLoading || isFetching;
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button type="button" className={triggerClassName} variant="outline">
+    <MorphDialog
+      layoutId={`book-${doctorId}`}
+      open={open}
+      onOpenChange={handleOpenChange}
+      triggerClassName={triggerClassName}
+      className="max-w-2xl"
+      trigger={
+        <Button type="button" className={cn("w-full", triggerClassName)} variant="outline">
           <CalendarPlus className="size-4" />
           Book Appointment
         </Button>
-      </DialogTrigger>
+      }
+    >
+      <div className="space-y-1.5 border-b px-6 py-5 pr-14">
+        <DialogTitle className="text-lg font-semibold">Book Appointment</DialogTitle>
+        <DialogDescription className="text-muted-foreground">
+          Choose one available slot for{" "}
+          {doctorName || data?.data.name || "this doctor"} from today onward.
+        </DialogDescription>
+      </div>
 
-      <DialogContent className="max-h-[90vh] overflow-hidden p-0 sm:max-w-2xl">
-        <DialogHeader className="border-b px-6 py-5 pr-14">
-          <DialogTitle>Book Appointment</DialogTitle>
-          <DialogDescription>
-            Choose one available slot for{" "}
-            {doctorName || data?.data.name || "this doctor"} from today onward.
-          </DialogDescription>
-        </DialogHeader>
-
-        <ScrollArea className="max-h-[calc(90vh-10rem)]">
-          <div className="space-y-4 px-6 py-5">
-            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              <Badge variant="secondary">Upcoming only</Badge>
-              <Badge variant="secondary">One slot per booking</Badge>
-              {!isAuthenticated && (
-                <Badge variant="outline">Login required to continue</Badge>
-              )}
-            </div>
-
-            {isBusy && (
-              <div className="flex items-center gap-2 rounded-xl border p-4 text-sm text-muted-foreground">
-                <Loader2 className="size-4 animate-spin" />
-                Loading available schedules...
-              </div>
-            )}
-
-            {!isBusy && availableSchedules.length === 0 && (
-              <div className="rounded-xl border p-4 text-sm text-muted-foreground">
-                No available schedules from today onward.
-              </div>
-            )}
-
-            {!isBusy && availableSchedules.length > 0 && (
-              <div className="grid gap-3">
-                {availableSchedules.map((item) => {
-                  const scheduleId = item.schedule?.id ?? "";
-                  const isSelected = selectedScheduleId === scheduleId;
-
-                  return (
-                    <button
-                      key={scheduleId}
-                      type="button"
-                      onClick={() => setSelectedScheduleId(scheduleId)}
-                      className={`rounded-2xl border p-4 text-left transition ${
-                        isSelected
-                          ? "border-primary bg-primary/5 shadow-sm"
-                          : "bg-card hover:border-primary/40 hover:bg-muted/30"
-                      }`}
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="space-y-1">
-                          <p className="font-medium">
-                            {formatDateTime(item.schedule?.startDateTime)}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            Ends {formatDateTime(item.schedule?.endDateTime)}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Clock3 className="size-3.5" />
-                          <span>
-                            {isSelected ? "Selected" : "Tap to select"}
-                          </span>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+      <ScrollArea className="max-h-[calc(90vh-10rem)]">
+        <div className="space-y-4 px-6 py-5">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <Badge variant="secondary">Upcoming only</Badge>
+            <Badge variant="secondary">One slot per booking</Badge>
+            {!isAuthenticated && (
+              <Badge variant="outline">Login required to continue</Badge>
             )}
           </div>
-        </ScrollArea>
 
-        <DialogFooter className="border-t px-6 py-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setOpen(false)}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            onClick={handleProceed}
-            className={fullWidth ? "w-full sm:w-auto" : undefined}
-          >
-            {isAuthenticated ? "Proceed to Confirm" : "Login to Continue"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          {isBusy && (
+            <div className="flex items-center gap-2 rounded-xl border p-4 text-sm text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" />
+              Loading available schedules...
+            </div>
+          )}
+
+          {!isBusy && availableSchedules.length === 0 && (
+            <div className="rounded-xl border p-4 text-sm text-muted-foreground">
+              No available schedules from today onward.
+            </div>
+          )}
+
+          {!isBusy && availableSchedules.length > 0 && (
+            // slots cascade in; the selected one sits on a highlight that glides between choices
+            <motion.div className="grid gap-3" variants={staggerContainer} initial="hidden" animate="show" role="group" aria-label="Available slots">
+              {availableSchedules.map((item) => {
+                const scheduleId = item.schedule?.id ?? "";
+                const isSelected = selectedScheduleId === scheduleId;
+
+                return (
+                  <motion.button
+                    key={scheduleId}
+                    type="button"
+                    aria-pressed={isSelected}
+                    variants={staggerItem}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setSelectedScheduleId(scheduleId)}
+                    className={cn(
+                      "relative isolate rounded-2xl border p-4 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                      isSelected ? "border-primary" : "bg-card/60 hover:border-primary/40",
+                    )}
+                  >
+                    {isSelected && (
+                      <motion.span
+                        layoutId={`book-${doctorId}-selected`}
+                        transition={springs.pill}
+                        className="absolute inset-0 -z-10 rounded-2xl bg-primary/8 shadow-[0_0_0_3px] shadow-primary/15"
+                        aria-hidden
+                      />
+                    )}
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="space-y-1">
+                        <p className="font-medium">
+                          {formatDateTime(item.schedule?.startDateTime)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Ends {formatDateTime(item.schedule?.endDateTime)}
+                        </p>
+                      </div>
+
+                      <div className={cn("flex items-center gap-2 text-xs", isSelected ? "font-medium text-primary" : "text-muted-foreground")}>
+                        {isSelected ? <Check className="size-3.5" aria-hidden /> : <Clock3 className="size-3.5" aria-hidden />}
+                        <span>{isSelected ? "Selected" : "Tap to select"}</span>
+                      </div>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </motion.div>
+          )}
+        </div>
+      </ScrollArea>
+
+      <div className="flex flex-col-reverse gap-2 border-t px-6 py-4 sm:flex-row sm:justify-end">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => handleOpenChange(false)}
+        >
+          Cancel
+        </Button>
+        <Button
+          type="button"
+          onClick={handleProceed}
+          className={fullWidth ? "w-full sm:w-auto" : undefined}
+        >
+          {isAuthenticated ? "Proceed to Confirm" : "Login to Continue"}
+        </Button>
+      </div>
+    </MorphDialog>
   );
 };
 

@@ -1,4 +1,7 @@
 "use client";
+import { Magnetic } from "@/components/motion/Magnetic";
+import { Stagger, StaggerItem } from "@/components/motion/Stagger";
+import { TiltCard } from "@/components/motion/TiltCard";
 import { formatTaka } from "@/lib/appointmentUtils";
 
 import {
@@ -155,9 +158,10 @@ const AppointmentBookingConfirmation = ({
     );
   }
 
+  // header, slot and payment cascade in; the payment card leans toward the pointer
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div className="rounded-xl border bg-card p-6 shadow-xs">
+    <Stagger className="mx-auto max-w-5xl space-y-6">
+      <StaggerItem className="glass rounded-xl p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold tracking-tight">
@@ -174,9 +178,9 @@ const AppointmentBookingConfirmation = ({
             <Badge variant="secondary">Stripe payment supported</Badge>
           </div>
         </div>
-      </div>
+      </StaggerItem>
 
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+      <StaggerItem className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <Card>
           <CardHeader>
             <CardTitle>Doctor & Schedule</CardTitle>
@@ -227,66 +231,70 @@ const AppointmentBookingConfirmation = ({
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Payment Summary</CardTitle>
-            <CardDescription>
-              Choose whether to pay now at checkout or keep the appointment
-              unpaid for later.
-            </CardDescription>
-          </CardHeader>
+        <TiltCard max={3} className="h-full rounded-xl">
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle>Payment Summary</CardTitle>
+              <CardDescription>
+                Choose whether to pay now at checkout or keep the appointment
+                unpaid for later.
+              </CardDescription>
+            </CardHeader>
 
-          <CardContent className="space-y-4">
-            <div className="rounded-2xl border bg-muted/20 p-4">
-              <p className="text-sm text-muted-foreground">Consultation fee</p>
-              <p className="mt-1 text-3xl font-semibold">
-                {formatTaka(appointmentFee)}
-              </p>
-            </div>
+            <CardContent className="space-y-4">
+              <div className="rounded-2xl border bg-muted/20 p-4">
+                <p className="text-sm text-muted-foreground">Consultation fee</p>
+                <p className="mt-1 text-3xl font-semibold">
+                  {formatTaka(appointmentFee)}
+                </p>
+              </div>
 
-            <Alert>
-              <AlertCircle className="size-4" />
-              <AlertTitle>Payment choices</AlertTitle>
-              <AlertDescription>
-                Pay now opens Stripe checkout. Pay later keeps the booking in
-                your appointments list so you can complete payment later.
-              </AlertDescription>
-            </Alert>
-          </CardContent>
+              <Alert>
+                <AlertCircle className="size-4" />
+                <AlertTitle>Payment choices</AlertTitle>
+                <AlertDescription>
+                  Pay now opens Stripe checkout. Pay later keeps the booking in
+                  your appointments list so you can complete payment later.
+                </AlertDescription>
+              </Alert>
+            </CardContent>
 
-          <CardFooter className="flex-col gap-3">
-            <Button
-              type="button"
-              className="w-full"
-              onClick={() => void handlePayNow()}
-              disabled={payNowMutation.isPending || payLaterMutation.isPending}
-            >
-              <CreditCard className="size-4" />
-              {payNowMutation.isPending
-                ? "Redirecting to Payment..."
-                : "Confirm & Pay Now"}
-            </Button>
+            <CardFooter className="flex-col gap-3">
+              <Magnetic className="flex w-full" strength={6}>
+                <Button
+                  type="button"
+                  className="w-full"
+                  onClick={() => void handlePayNow()}
+                  disabled={payNowMutation.isPending || payLaterMutation.isPending}
+                >
+                  <CreditCard className="size-4" />
+                  {payNowMutation.isPending
+                    ? "Redirecting to Payment..."
+                    : "Confirm & Pay Now"}
+                </Button>
+              </Magnetic>
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => void handlePayLater()}
-              disabled={payNowMutation.isPending || payLaterMutation.isPending}
-            >
-              <Wallet className="size-4" />
-              {payLaterMutation.isPending ? "Booking..." : "Book & Pay Later"}
-            </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => void handlePayLater()}
+                disabled={payNowMutation.isPending || payLaterMutation.isPending}
+              >
+                <Wallet className="size-4" />
+                {payLaterMutation.isPending ? "Booking..." : "Book & Pay Later"}
+              </Button>
 
-            <Button asChild variant="ghost" className="w-full">
-              <Link href={`/consultation/doctor/${doctorId}`}>
-                Back to Doctor Details
-              </Link>
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    </div>
+              <Button asChild variant="ghost" className="w-full">
+                <Link href={`/consultation/doctor/${doctorId}`}>
+                  Back to Doctor Details
+                </Link>
+              </Button>
+            </CardFooter>
+          </Card>
+        </TiltCard>
+      </StaggerItem>
+    </Stagger>
   );
 };
 

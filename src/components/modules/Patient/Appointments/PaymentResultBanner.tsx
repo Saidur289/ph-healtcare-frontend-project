@@ -1,6 +1,6 @@
 "use client";
 import { getAppointmentPaymentStatusAction } from "@/app/_actions/appointment.actions";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { FloatingAlert } from "@/components/motion/FloatingAlert";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -23,6 +23,7 @@ const PaymentResultBanner = ({
   const [state, setState] = useState<TState>(
     payment === "cancelled" ? "cancelled" : "checking",
   );
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     if (payment !== "success" || !appointmentId) return;
@@ -56,59 +57,48 @@ const PaymentResultBanner = ({
 
   if (payment !== "success" && payment !== "cancelled") return null;
 
-  if (state === "cancelled") {
-    return (
-      <Alert variant="destructive" className="mb-4">
-        <XCircle className="h-4 w-4" />
-        <AlertTitle>Payment cancelled</AlertTitle>
-        <AlertDescription>
-          No money was taken. Your appointment is kept until its payment deadline - you can pay
-          with the &quot;Pay Now&quot; button below.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-  if (state === "paid") {
-    return (
-      <Alert className="mb-4 border-success/40 text-success">
-        <CheckCircle2 className="h-4 w-4" />
-        <AlertTitle>Payment successful</AlertTitle>
-        <AlertDescription>
-          Your appointment is confirmed. The invoice will arrive by email in a few minutes.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-  if (state === "refunded") {
-    return (
-      <Alert variant="destructive" className="mb-4">
-        <XCircle className="h-4 w-4" />
-        <AlertTitle>Payment refunded</AlertTitle>
-        <AlertDescription>
-          The payment arrived after the booking had expired, so it was refunded automatically.
-          Please book a new time slot.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-  if (state === "slow") {
-    return (
-      <Alert className="mb-4">
-        <Loader2 className="h-4 w-4" />
-        <AlertTitle>Payment is being confirmed</AlertTitle>
-        <AlertDescription>
-          This is taking longer than usual. Refresh this page in a minute - if Stripe charged you,
-          the appointment will show as paid.
-        </AlertDescription>
-      </Alert>
-    );
-  }
+  const view: Record<TState, { tone: "info" | "success" | "danger"; icon: typeof Loader2; spin?: boolean; title: string; text: string }> = {
+    cancelled: {
+      tone: "danger",
+      icon: XCircle,
+      title: "Payment cancelled",
+      text: "No money was taken. Your appointment is kept until its payment deadline - you can pay with the \"Pay Now\" button below.",
+    },
+    paid: {
+      tone: "success",
+      icon: CheckCircle2,
+      title: "Payment successful",
+      text: "Your appointment is confirmed. The invoice will arrive by email in a few minutes.",
+    },
+    refunded: {
+      tone: "danger",
+      icon: XCircle,
+      title: "Payment refunded",
+      text: "The payment arrived after the booking had expired, so it was refunded automatically. Please book a new time slot.",
+    },
+    slow: {
+      tone: "info",
+      icon: Loader2,
+      title: "Payment is being confirmed",
+      text: "This is taking longer than usual. Refresh this page in a minute - if Stripe charged you, the appointment will show as paid.",
+    },
+    checking: { tone: "info", icon: Loader2, spin: true, title: "Confirming your payment...", text: "Please wait a few seconds." },
+  };
+  const current = view[state];
+
+  // a floating card at the screen edge; it morphs from "confirming" to the result and can be swiped away
   return (
-    <Alert className="mb-4">
-      <Loader2 className="h-4 w-4 animate-spin" />
-      <AlertTitle>Confirming your payment...</AlertTitle>
-      <AlertDescription>Please wait a few seconds.</AlertDescription>
-    </Alert>
+    <FloatingAlert
+      show={!dismissed}
+      onDismiss={() => setDismissed(true)}
+      tone={current.tone}
+      icon={current.icon}
+      iconClassName={current.spin ? "animate-spin" : undefined}
+      title={current.title}
+      contentKey={state}
+    >
+      {current.text}
+    </FloatingAlert>
   );
 };
 
