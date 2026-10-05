@@ -6,6 +6,7 @@ import {
   IBookAppointmentPayload,
   IBookAppointmentResult,
   IInitiatePaymentResult,
+  IMedicalHistory,
 } from "@/types/appointment.types";
 
 // idempotencyKey: one random id per booking attempt; a retry with the same id
@@ -49,4 +50,9 @@ export const getMySingleAppointment = async (appointmentId: string) => {
   return await httpClient.get<IAppointment>(
     `/appointments/my-single-appointment/${appointmentId}`,
   );
+};
+
+// DOCTOR: the patient's health data + report list through one of the doctor's own appointments
+export const getMedicalHistory = async (appointmentId: string) => {
+  return await httpClient.get<IMedicalHistory>(`/appointments/${appointmentId}/medical-history`);
 };

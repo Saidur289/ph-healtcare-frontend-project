@@ -63,3 +63,28 @@ export interface IBookAppointmentResult {
 export interface IInitiatePaymentResult {
   paymentUrl: string;
 }
+
+// GET /appointments/:id/medical-history (DOCTOR, own appointment; every read is audited)
+export interface IMedicalHistory {
+  patient: { id: string; name: string; profilePhoto?: string | null };
+  healthData: {
+    gender: "MALE" | "FEMALE";
+    dateOfBirth: string;
+    bloodGroup: string;
+    height: string;
+    weight: string;
+    hasAllergies: boolean;
+    hasDiabetes: boolean;
+    smokingStatus: boolean;
+    pregnancyStatus: boolean;
+    hasPastSurgeries: boolean;
+    recentAnxiety: boolean;
+    recentDepression: boolean;
+    dietaryPreferences?: string | null;
+    mentalHealthHistory?: string | null;
+    immunizationStatus?: string | null;
+    updatedAt?: string;
+  } | null;
+  // a report file opens through /files/reports/:id (signed, expiring link)
+  reports: { id: string; reportName: string; createdAt: string; hasFile: boolean }[];
+}

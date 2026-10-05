@@ -1,4 +1,6 @@
 "use client";
+import { staggerContainer, staggerItem } from "@/lib/motion";
+import { motion } from "motion/react";
 
 import { createMyDoctorScheduleAction } from "@/app/(dashboardLayout)/doctor/dashboard/my-schedules/_action";
 import { Button } from "@/components/ui/button";
@@ -186,13 +188,14 @@ const BookScheduleModal = () => {
             {!isLoadingSchedules &&
               !isLoadingMySchedules &&
               availableSchedules.length > 0 && (
-                <div className="space-y-2">
+                <motion.div className="space-y-2" variants={staggerContainer} initial="hidden" animate="show">
                   {availableSchedules.map((schedule) => {
                     const checked = selectedScheduleIds.includes(schedule.id);
                     return (
-                      <label
+                      <motion.label
                         key={schedule.id}
-                        className="flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 text-sm"
+                        variants={staggerItem}
+                        className={`flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 text-sm transition-colors ${checked ? "border-primary bg-primary/5" : "hover:border-primary/40"}`}
                       >
                         <Checkbox
                           checked={checked}
@@ -208,10 +211,10 @@ const BookScheduleModal = () => {
                             Ends at {formatDateTime(schedule.endDateTime)}
                           </p>
                         </div>
-                      </label>
+                      </motion.label>
                     );
                   })}
-                </div>
+                </motion.div>
               )}
 
             <DialogFooter>

@@ -12,6 +12,18 @@ test("a doctor starts a paid consultation, completes it and writes the prescript
 
   // start: opening the room moves the appointment to "In progress"
   await page.goto("/doctor/dashboard/appointments");
+
+  // medical history morphs open from its button (read is audited on the API)
+  const historyDialog = page.getByRole("dialog", { name: "Medical history" });
+  await expect(async () => {
+    await page.getByRole("button", { name: "Medical history" }).first().click();
+    await expect(historyDialog).toBeVisible({ timeout: 2_000 });
+  }).toPass({ timeout: 20_000 });
+  await expect(historyDialog.getByText("your access is recorded")).toBeVisible();
+  await expect(historyDialog.getByText("The patient has not filled in their health information yet.")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(historyDialog).toBeHidden();
+
   await page.getByRole("link", { name: "Start call" }).click();
   await expect(page.getByRole("heading", { name: "Consultation with E2E Patient" })).toBeVisible();
   await expect(page.locator('iframe[title="Video consultation"]')).toBeAttached();

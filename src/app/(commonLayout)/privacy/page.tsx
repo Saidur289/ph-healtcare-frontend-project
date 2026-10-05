@@ -19,7 +19,7 @@ const SECTIONS: { title: string; body: string[] }[] = [
     title: "How we use it",
     body: [
       "To book and run your video consultations, send reminders, prescriptions and invoices, and keep your records available to you.",
-      "Only you and the doctors you consult see your health information. Administrators manage accounts and payments; they do not see your health data or files.",
+      "Only you and the doctors you book see your health information and reports: a doctor can open them for an upcoming, ongoing or completed consultation with you (not after a cancellation), and every time a doctor opens them it is recorded. Administrators manage accounts and payments; they do not see your health data or files.",
       "We do not sell your data, show advertising or use analytics trackers.",
     ],
   },

@@ -1,4 +1,7 @@
 import DashboardGreeting from "@/components/modules/Dashboard/DashboardGreeting";
+import DoctorNextUpCard from "@/components/modules/Doctor/Dashboard/DoctorNextUpCard";
+import { Stagger, StaggerItem } from "@/components/motion/Stagger";
+import { TiltCard } from "@/components/motion/TiltCard";
 import UpcomingAppointmentsTable from "@/components/modules/Doctor/Dashboard/UpcomingAppointmentsTable";
 import ErrorState from "@/components/shared/ErrorState";
 import StatsCard from "@/components/shared/StatsCard";
@@ -22,49 +25,64 @@ const DoctorDashboardPage = async () => {
   ]);
   const data = stats.data;
 
+  // sections cascade in; numbers, the next patient and the rating lean toward the pointer
   return (
-    <div className="space-y-6">
-      <DashboardGreeting name={`Dr. ${user?.name ?? ""}`} />
+    <Stagger className="space-y-6">
+      <StaggerItem>
+        <DashboardGreeting name={`Dr. ${user?.name ?? ""}`} />
+      </StaggerItem>
 
       {!data ? (
         <ErrorState message="Could not load your dashboard numbers." />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <StatsCard
-            title="Appointments Today"
-            value={data.todayAppointmentCount}
-            iconName="CalendarCheck"
-            tone="blue"
-            trend={{
-              diff: data.todayAppointmentCount - data.yesterdayAppointmentCount,
-              label: diffLabel(data.todayAppointmentCount - data.yesterdayAppointmentCount),
-            }}
-          />
-          <StatsCard
-            title="Total Patients"
-            value={data.patientCount}
-            iconName="Users"
-            tone="teal"
-            trend={{ diff: data.newPatientsToday, label: "new today" }}
-          />
-          <StatsCard
-            title="Today's Earnings"
-            value={formatTaka(data.todayRevenue)}
-            iconName="Wallet"
-            tone="green"
-            trend={{
-              diff: data.todayRevenue - data.yesterdayRevenue,
-              display: formatTaka(Math.abs(data.todayRevenue - data.yesterdayRevenue)),
-              label: diffLabel(data.todayRevenue - data.yesterdayRevenue),
-            }}
-          />
-        </div>
+        <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <StaggerItem>
+            <StatsCard
+              tilt
+              title="Appointments Today"
+              value={data.todayAppointmentCount}
+              iconName="CalendarCheck"
+              tone="blue"
+              trend={{
+                diff: data.todayAppointmentCount - data.yesterdayAppointmentCount,
+                label: diffLabel(data.todayAppointmentCount - data.yesterdayAppointmentCount),
+              }}
+            />
+          </StaggerItem>
+          <StaggerItem>
+            <StatsCard
+              tilt
+              title="Total Patients"
+              value={data.patientCount}
+              iconName="Users"
+              tone="teal"
+              trend={{ diff: data.newPatientsToday, label: "new today" }}
+            />
+          </StaggerItem>
+          <StaggerItem>
+            <StatsCard
+              tilt
+              title="Today's Earnings"
+              value={formatTaka(data.todayRevenue)}
+              iconName="Wallet"
+              tone="green"
+              trend={{
+                diff: data.todayRevenue - data.yesterdayRevenue,
+                display: formatTaka(Math.abs(data.todayRevenue - data.yesterdayRevenue)),
+                label: diffLabel(data.todayRevenue - data.yesterdayRevenue),
+              }}
+            />
+          </StaggerItem>
+        </Stagger>
       )}
 
-      <div className="grid gap-4 xl:grid-cols-3">
-        <div className="min-w-0 xl:col-span-2">
+      <StaggerItem className="grid gap-4 xl:grid-cols-3">
+        <div className="min-w-0 space-y-4 xl:col-span-2">
           {appointments ? (
-            <UpcomingAppointmentsTable appointments={appointments.data ?? []} />
+            <>
+              <DoctorNextUpCard appointments={appointments.data ?? []} />
+              <UpcomingAppointmentsTable appointments={appointments.data ?? []} />
+            </>
           ) : (
             <ErrorState message="Could not load your appointments." />
           )}
@@ -72,18 +90,20 @@ const DoctorDashboardPage = async () => {
 
         {data && (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1 xl:content-start">
-            <Card className="gap-3 p-5 shadow-xs">
-              <p className="text-[15px] font-semibold">Rating</p>
-              <div className="flex items-center gap-2">
-                <Star className="h-6 w-6 fill-amber-400 text-amber-400" aria-hidden />
-                <span className="text-[28px] font-semibold leading-none">{data.averageRating.toFixed(1)}</span>
-                <span className="text-[13px] text-muted-foreground">/ 5</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                From {data.reviewCount} review{data.reviewCount === 1 ? "" : "s"} · total earnings{" "}
-                {formatTaka(data.totalRevenue)}
-              </p>
-            </Card>
+            <TiltCard className="rounded-xl">
+              <Card className="gap-3 p-5 shadow-xs">
+                <p className="text-[15px] font-semibold">Rating</p>
+                <div className="flex items-center gap-2">
+                  <Star className="h-6 w-6 fill-amber-400 text-amber-400" aria-hidden />
+                  <span className="text-[28px] font-semibold leading-none">{data.averageRating.toFixed(1)}</span>
+                  <span className="text-[13px] text-muted-foreground">/ 5</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  From {data.reviewCount} review{data.reviewCount === 1 ? "" : "s"} · total earnings{" "}
+                  {formatTaka(data.totalRevenue)}
+                </p>
+              </Card>
+            </TiltCard>
             <Card className="gap-3 p-5 shadow-xs">
               <p className="text-[15px] font-semibold">All appointments</p>
               {data.appointmentStatusDistribution.length === 0 ? (
@@ -101,8 +121,8 @@ const DoctorDashboardPage = async () => {
             </Card>
           </div>
         )}
-      </div>
-    </div>
+      </StaggerItem>
+    </Stagger>
   );
 };
 

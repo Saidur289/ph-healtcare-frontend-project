@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Table,
-  TableBody,
   TableCell,
   TableHead,
   TableHeader,
@@ -29,6 +28,8 @@ import {
   ChevronRight,
   MoreVertical,
 } from "lucide-react";
+import { staggerContainer, staggerItem } from "@/lib/motion";
+import { motion } from "motion/react";
 import Link from "next/link";
 import DataTableFilters, {
   DataTableFilterConfig,
@@ -279,10 +280,16 @@ const DataTable = <TData,>({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
+          {/* rows cascade in (also after paging / filtering) */}
+          <motion.tbody data-slot="table-body" className="[&_tr:last-child]:border-0" variants={staggerContainer} initial="hidden" animate="show">
             {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <motion.tr
+                  key={row.id}
+                  variants={staggerItem}
+                  data-slot="table-row"
+                  className="border-b transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted"
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="px-5 py-3">
                       {flexRender(
@@ -291,7 +298,7 @@ const DataTable = <TData,>({
                       )}
                     </TableCell>
                   ))}
-                </TableRow>
+                </motion.tr>
               ))
             ) : (
               <TableRow>
@@ -303,7 +310,7 @@ const DataTable = <TData,>({
                 </TableCell>
               </TableRow>
             )}
-          </TableBody>
+          </motion.tbody>
         </Table>
         {pagination && (
           <DataTablePagination

@@ -5,12 +5,14 @@ import {
   bookAppointmentWithPayLater,
   initiateAppointmentPayment,
   getMySingleAppointment,
+  getMedicalHistory,
 } from "@/services/appointment.services";
 import { type ApiErrorResponse, type ApiResponse } from "@/types/api.types";
 import {
   type IBookAppointmentPayload,
   type IBookAppointmentResult,
   type IInitiatePaymentResult,
+  type IMedicalHistory,
 } from "@/types/appointment.types";
 import { bookAppointmentServerZodSchema } from "@/zod/appointment.validation";
 
@@ -141,6 +143,25 @@ export const initiateAppointmentPaymentAction = async (
     return {
       success: false,
       message: getActionErrorMessage(error, "Failed to initiate payment"),
+    };
+  }
+};
+
+// DOCTOR: medical history for one of the doctor's own appointments (the API checks ownership
+// and status, and audits the read)
+export const getMedicalHistoryAction = async (
+  appointmentId: string,
+): Promise<{ success: true; data: IMedicalHistory } | ApiErrorResponse> => {
+  if (!/^[0-9a-f-]{36}$/i.test(appointmentId)) {
+    return { success: false, message: "Invalid appointment id" };
+  }
+  try {
+    const result = await getMedicalHistory(appointmentId);
+    return { success: true, data: result.data };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      message: getActionErrorMessage(error, "Could not load the medical history"),
     };
   }
 };

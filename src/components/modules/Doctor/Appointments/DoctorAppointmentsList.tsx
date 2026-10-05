@@ -1,6 +1,7 @@
 "use client";
 import { completeAppointmentAction, markNoShowAction } from "@/app/_actions/consultation.actions";
 import CancelAppointmentDialog from "@/components/modules/Patient/Appointments/CancelAppointmentDialog";
+import { Magnetic } from "@/components/motion/Magnetic";
 import EmptyState from "@/components/shared/EmptyState";
 import StatusPill from "@/components/shared/StatusPill";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -8,10 +9,13 @@ import { Button } from "@/components/ui/button";
 import { useNow } from "@/hooks/useNow";
 import { formatDay, formatTaka, formatTime, isJoinable, slotEnd, slotStart } from "@/lib/appointmentUtils";
 import { initials } from "@/lib/userDisplay";
+import { springs, staggerContainer, staggerItem } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { IAppointment } from "@/types/appointment.types";
 import { isSameDay } from "date-fns";
 import { CheckCircle2, FileText, Search, UserX, Video } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import MedicalHistoryMorph from "./MedicalHistoryMorph";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
@@ -81,7 +85,7 @@ const DoctorAppointmentsList = ({ appointments }: { appointments: IAppointment[]
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div role="tablist" aria-label="Appointments" className="inline-flex flex-wrap rounded-lg border bg-card p-1">
+        <div role="tablist" aria-label="Appointments" className="glass inline-flex flex-wrap rounded-lg p-1">
           {TABS.map((t) => (
             <button
               key={t.id}
@@ -92,10 +96,18 @@ const DoctorAppointmentsList = ({ appointments }: { appointments: IAppointment[]
               aria-controls="doctor-appointments-panel"
               onClick={() => selectTab(t.id)}
               className={cn(
-                "rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                tab === t.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+                "relative isolate rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                tab === t.id ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
               )}
             >
+              {tab === t.id && (
+                <motion.span
+                  layoutId="doctor-appointment-tab"
+                  transition={springs.pill}
+                  className="absolute inset-0 -z-10 rounded-md bg-primary shadow-[0_0_18px_-6px] shadow-primary"
+                  aria-hidden
+                />
+              )}
               {t.label}
               <span className={cn("ml-1.5 text-xs", tab === t.id ? "text-primary-foreground/80" : "text-muted-foreground")}>
                 {groups[t.id].length}
@@ -112,94 +124,109 @@ const DoctorAppointmentsList = ({ appointments }: { appointments: IAppointment[]
             maxLength={100}
             placeholder="Filter by patient"
             aria-label="Filter by patient name or email"
-            className="h-9 w-full rounded-lg border bg-card pl-9 pr-3 text-[13px] outline-none focus:border-ring"
+            className="glass h-9 w-full rounded-lg pl-9 pr-3 text-[13px] outline-none focus:border-ring"
           />
         </div>
       </div>
 
-      <div id="doctor-appointments-panel" role="tabpanel" aria-labelledby={`tab-${tab}`}>
-        {list.length === 0 ? (
-          <EmptyState
-            title={needle ? "No patient matches your filter" : `No ${TABS.find((t) => t.id === tab)!.label.toLowerCase()} appointments`}
-            description={tab === "today" && !needle ? "Open slots in My Schedules so patients can book you." : undefined}
-            action={
-              tab === "today" && !needle ? (
-                <Button asChild size="sm" variant="outline">
-                  <Link href="/doctor/dashboard/my-schedules">My Schedules</Link>
-                </Button>
-              ) : undefined
-            }
-          />
-        ) : (
-          <ul className="space-y-3">
-            {list.map((a) => {
-              const joinable = isJoinable(a, now);
-              const busy = pending && busyId === a.id;
-              const canNoShow = a.status === "SCHEDULED" && now > 0 && now >= slotStart(a) + NO_SHOW_AFTER_MS;
-              const needsPrescription = (a.status === "INPROGRESS" || a.status === "COMPLETED") && !a.prescription;
-              return (
-                <li key={a.id} className="rounded-xl border bg-card p-4 shadow-xs">
-                  <div className="flex flex-wrap items-start gap-3">
-                    <Avatar className="h-11 w-11">
-                      <AvatarFallback className="bg-accent text-sm font-semibold text-accent-foreground">{initials(a.patient?.name)}</AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold">{a.patient?.name ?? "Patient"}</p>
-                      <p className="truncate text-xs text-muted-foreground">{a.patient?.email}</p>
-                      <div className="mt-2 flex flex-wrap items-center gap-2 text-[13px]">
-                        <span className="font-medium">
-                          {formatDay(a.schedule?.startDateTime)} · {formatTime(a.schedule?.startDateTime)} – {formatTime(a.schedule?.endDateTime)}
-                        </span>
-                        <StatusPill status={a.status} />
-                        <StatusPill status={a.paymentStatus} />
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={tab}
+          id="doctor-appointments-panel"
+          role="tabpanel"
+          aria-labelledby={`tab-${tab}`}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0, transition: springs.page }}
+          exit={{ opacity: 0, y: -4, transition: { duration: 0.12 } }}
+        >
+          {list.length === 0 ? (
+            <EmptyState
+              title={needle ? "No patient matches your filter" : `No ${TABS.find((t) => t.id === tab)!.label.toLowerCase()} appointments`}
+              description={tab === "today" && !needle ? "Open slots in My Schedules so patients can book you." : undefined}
+              action={
+                tab === "today" && !needle ? (
+                  <Button asChild size="sm" variant="outline">
+                    <Link href="/doctor/dashboard/my-schedules">My Schedules</Link>
+                  </Button>
+                ) : undefined
+              }
+            />
+          ) : (
+            <motion.ul className="space-y-3" variants={staggerContainer} initial="hidden" animate="show">
+              {list.map((a) => {
+                const joinable = isJoinable(a, now);
+                const busy = pending && busyId === a.id;
+                const canNoShow = a.status === "SCHEDULED" && now > 0 && now >= slotStart(a) + NO_SHOW_AFTER_MS;
+                const needsPrescription = (a.status === "INPROGRESS" || a.status === "COMPLETED") && !a.prescription;
+                return (
+                  <motion.li key={a.id} layout variants={staggerItem} className="glass rounded-xl p-4">
+                    <div className="flex flex-wrap items-start gap-3">
+                      <Avatar className="h-11 w-11">
+                        <AvatarFallback className="bg-accent text-sm font-semibold text-accent-foreground">{initials(a.patient?.name)}</AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold">{a.patient?.name ?? "Patient"}</p>
+                        <p className="truncate text-xs text-muted-foreground">{a.patient?.email}</p>
+                        <div className="mt-2 flex flex-wrap items-center gap-2 text-[13px]">
+                          <span className="font-medium">
+                            {formatDay(a.schedule?.startDateTime)} · {formatTime(a.schedule?.startDateTime)} – {formatTime(a.schedule?.endDateTime)}
+                          </span>
+                          <StatusPill status={a.status} />
+                          <StatusPill status={a.paymentStatus} />
+                        </div>
                       </div>
+                      <p className="text-sm font-semibold">{formatTaka(a.payment?.amount)}</p>
                     </div>
-                    <p className="text-sm font-semibold">{formatTaka(a.payment?.amount)}</p>
-                  </div>
 
-                  <div className="mt-4 flex flex-wrap items-center justify-end gap-2 border-t pt-3">
-                    {joinable && (
-                      <Button asChild size="sm">
-                        <Link href={`/consultation/room/${a.id}`}>
-                          <Video className="h-4 w-4" aria-hidden /> {a.status === "INPROGRESS" ? "Rejoin call" : "Start call"}
-                        </Link>
-                      </Button>
-                    )}
-                    {a.status === "INPROGRESS" && (
-                      <Button size="sm" variant="outline" disabled={busy} onClick={() => run(a.id, completeAppointmentAction)}>
-                        <CheckCircle2 className="h-4 w-4" aria-hidden /> {busy ? "Completing..." : "Complete"}
-                      </Button>
-                    )}
-                    {needsPrescription && (
-                      <Button asChild size="sm" variant="outline">
-                        <Link href={`/doctor/dashboard/prescriptions?appointmentId=${encodeURIComponent(a.id)}`}>
-                          <FileText className="h-4 w-4" aria-hidden /> Write prescription
-                        </Link>
-                      </Button>
-                    )}
-                    {a.prescription?.pdfUrl && (
-                      <Button asChild size="sm" variant="ghost">
-                        <a href={`/files/prescriptions/${a.prescription.id}`} target="_blank" rel="noopener noreferrer">
-                          <FileText className="h-4 w-4" aria-hidden /> Prescription PDF
-                        </a>
-                      </Button>
-                    )}
-                    {canNoShow && (
-                      <Button size="sm" variant="outline" disabled={busy} onClick={() => run(a.id, markNoShowAction)}>
-                        <UserX className="h-4 w-4" aria-hidden /> No-show
-                      </Button>
-                    )}
-                    {a.status === "SCHEDULED" && <CancelAppointmentDialog appointment={a} who="doctor" />}
-                    {a.status === "SCHEDULED" && a.paymentStatus !== "PAID" && (
-                      <span className="text-xs text-muted-foreground">Waiting for payment</span>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
+                    <div className="mt-4 flex flex-wrap items-center justify-end gap-2 border-t pt-3">
+                      {joinable && (
+                        <Magnetic>
+                          <Button asChild size="sm">
+                            <Link href={`/consultation/room/${a.id}`}>
+                              <Video className="h-4 w-4" aria-hidden /> {a.status === "INPROGRESS" ? "Rejoin call" : "Start call"}
+                            </Link>
+                          </Button>
+                        </Magnetic>
+                      )}
+                      {(a.status === "SCHEDULED" || a.status === "INPROGRESS" || a.status === "COMPLETED") && (
+                        <MedicalHistoryMorph appointmentId={a.id} patientName={a.patient?.name} />
+                      )}
+                      {a.status === "INPROGRESS" && (
+                        <Button size="sm" variant="outline" disabled={busy} onClick={() => run(a.id, completeAppointmentAction)}>
+                          <CheckCircle2 className="h-4 w-4" aria-hidden /> {busy ? "Completing..." : "Complete"}
+                        </Button>
+                      )}
+                      {needsPrescription && (
+                        <Button asChild size="sm" variant="outline">
+                          <Link href={`/doctor/dashboard/prescriptions?appointmentId=${encodeURIComponent(a.id)}`}>
+                            <FileText className="h-4 w-4" aria-hidden /> Write prescription
+                          </Link>
+                        </Button>
+                      )}
+                      {a.prescription?.pdfUrl && (
+                        <Button asChild size="sm" variant="ghost">
+                          <a href={`/files/prescriptions/${a.prescription.id}`} target="_blank" rel="noopener noreferrer">
+                            <FileText className="h-4 w-4" aria-hidden /> Prescription PDF
+                          </a>
+                        </Button>
+                      )}
+                      {canNoShow && (
+                        <Button size="sm" variant="outline" disabled={busy} onClick={() => run(a.id, markNoShowAction)}>
+                          <UserX className="h-4 w-4" aria-hidden /> No-show
+                        </Button>
+                      )}
+                      {a.status === "SCHEDULED" && <CancelAppointmentDialog appointment={a} who="doctor" />}
+                      {a.status === "SCHEDULED" && a.paymentStatus !== "PAID" && (
+                        <span className="text-xs text-muted-foreground">Waiting for payment</span>
+                      )}
+                    </div>
+                  </motion.li>
+                );
+              })}
+            </motion.ul>
+          )}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 };
