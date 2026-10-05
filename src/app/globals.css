@@ -156,3 +156,108 @@
     @apply font-sans;
   }
 }
+/* =====================================================================================
+   Motion + surfaces (UI overhaul). Physics live in src/lib/motion.ts; this is the CSS side.
+   ===================================================================================== */
+:root {
+  /* the spec's spring (stiffness 120, damping 20) sampled as a CSS easing: settles in ~580 ms */
+  --ease-spring: linear(0, 0.03, 0.102, 0.195, 0.298, 0.399, 0.495, 0.582, 0.659, 0.725, 0.781, 0.828, 0.866, 0.897, 0.922, 0.941, 0.957, 0.969, 0.978, 0.984, 0.99, 0.993, 0.996, 0.998, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  /* portal glass: translucent surface + hairline border (black/5 light, white/10 dark) */
+  --glass-bg: rgb(255 255 255 / 0.72);
+  --glass-bg-strong: rgb(255 255 255 / 0.86);
+  --glass-border: rgb(0 0 0 / 0.06);
+  --glass-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -12px rgb(15 23 42 / 0.12);
+  --portal-glow-1: rgb(21 101 216 / 0.10);
+  --portal-glow-2: rgb(20 184 166 / 0.08);
+}
+.dark {
+  --glass-bg: rgb(17 27 43 / 0.62);
+  --glass-bg-strong: rgb(17 27 43 / 0.82);
+  --glass-border: rgb(255 255 255 / 0.10);
+  --glass-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px -16px rgb(0 0 0 / 0.6);
+  --portal-glow-1: rgb(96 165 250 / 0.12);
+  --portal-glow-2: rgb(45 212 191 / 0.08);
+}
+
+/* ---------- page transitions (components/motion/PageTransition.tsx) ---------- */
+@keyframes page-exit {
+  to { opacity: 0; scale: 0.98; }
+}
+@keyframes page-enter {
+  from { opacity: 0; translate: 0 15px; }
+}
+::view-transition-old(.page-exit) {
+  animation: 160ms var(--ease-out-quint) both page-exit;
+}
+::view-transition-new(.page-enter) {
+  animation: 580ms var(--ease-spring) 80ms both page-enter;
+}
+/* clicks during a transition reach the live page */
+::view-transition {
+  pointer-events: none;
+}
+/* the app frame (sidebar, navbars) stays put: only the page content moves */
+::view-transition-group(app-sidebar),
+::view-transition-group(app-navbar) {
+  animation: none;
+  z-index: 50;
+}
+::view-transition-old(app-sidebar),
+::view-transition-old(app-navbar) {
+  display: none;
+}
+::view-transition-new(app-sidebar),
+::view-transition-new(app-navbar) {
+  animation: none;
+}
+
+/* ---------- portal surfaces: glass cards, tables and overlays inside [data-surface="portal"] ---------- */
+@utility glass {
+  background-color: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+}
+[data-surface="portal"] {
+  /* soft ambient light behind the glass (fixed, so it doesn't scroll with the content) */
+  background:
+    radial-gradient(60rem 40rem at 10% -10%, var(--portal-glow-1), transparent 60%),
+    radial-gradient(50rem 36rem at 110% 20%, var(--portal-glow-2), transparent 60%),
+    var(--background);
+  background-attachment: fixed;
+}
+[data-surface="portal"] [data-slot="card"],
+[data-surface="portal"] [data-slot="table-container"] {
+  background-color: var(--glass-bg);
+  border-color: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+}
+/* floating layers (dialogs, menus, popovers) are glass everywhere */
+[data-slot="dialog-content"],
+[data-slot="alert-dialog-content"],
+[data-slot="dropdown-menu-content"],
+[data-slot="popover-content"] {
+  background-color: var(--glass-bg-strong);
+  border-color: var(--glass-border);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+}
+
+/* ---------- reduced motion: no movement anywhere ---------- */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
+/* browsers without backdrop-filter get an almost opaque surface (readable text) */
+@supports not (backdrop-filter: blur(1px)) {
+  :root { --glass-bg: rgb(255 255 255 / 0.96); --glass-bg-strong: #fff; }
+  .dark { --glass-bg: rgb(17 27 43 / 0.96); --glass-bg-strong: #111b2b; }
+}

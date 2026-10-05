@@ -3,7 +3,8 @@ import { headers } from "next/headers";
 import { Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { QueryProviders } from "@/providers/QueryProvider";
-import { Toaster } from "@/components/ui/sonner";
+import { MotionProvider } from "@/components/motion/MotionProvider";
+import { MotionToaster } from "@/components/motion/MotionToaster";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 
 // Inter-like sans from the design (variable font, self-hosted by next/font)
@@ -40,8 +41,11 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground text-sm">
         <ThemeProvider nonce={nonce}>
           <QueryProviders nonce={nonce}>
-            {children}
-            <Toaster />
+            <MotionProvider>
+              {children}
+              {/* floating, swipe-to-dismiss notifications for toast.success / toast.error */}
+              <MotionToaster />
+            </MotionProvider>
           </QueryProviders>
         </ThemeProvider>
       </body>

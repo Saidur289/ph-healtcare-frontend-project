@@ -13,7 +13,8 @@ const RootDashboardLayout = async ({ children }: { children: ReactNode }) => {
       <div className="flex flex-1 overflow-hidden flex-col">
         {/* dashboard navbar */}
         <DashboardNavbar />
-        <main className="flex-1 overflow-y-auto bg-background p-4 md:p-6">
+        {/* data-surface="portal": glass cards and tables over a soft ambient background (globals.css) */}
+        <main data-surface="portal" className="flex-1 overflow-y-auto bg-background p-4 md:p-6">
           {/* dashboard content */}
           <div className="mx-auto w-full max-w-7xl">{children}</div>
         </main>

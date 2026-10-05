@@ -56,7 +56,11 @@ const DashboardNavbarContent = ({ dashboardHome, navItems, userInfo }: Dashboard
   };
 
   return (
-    <header className="flex h-16 shrink-0 items-center gap-3 border-b bg-card px-4 md:px-6">
+    // glass bar; named for view transitions so it stays still while pages change
+    <header
+      className="relative z-20 flex h-16 shrink-0 items-center gap-3 border-b border-[var(--glass-border)] bg-[var(--glass-bg-strong)] px-4 backdrop-blur-xl md:px-6"
+      style={{ viewTransitionName: "app-navbar" }}
+    >
       {/* mobile: the sidebar becomes a drawer */}
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>

@@ -4,6 +4,8 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from 
 import { cn } from "@/lib/utils";
 import { HeartPulse, LayoutDashboard, Menu } from "lucide-react";
 import Link from "next/link";
+import { springs } from "@/lib/motion";
+import { motion } from "motion/react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
@@ -26,6 +28,7 @@ const Brand = () => (
 const PublicNavbar = ({ dashboardHref }: { dashboardHref: string | null }) => {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [hovered, setHovered] = useState<string | null>(null);
   const isActive = (href: string) => (href === "/" ? pathname === "/" : !href.includes("#") && pathname.startsWith(href));
 
   const actions = dashboardHref ? (
@@ -46,23 +49,36 @@ const PublicNavbar = ({ dashboardHref }: { dashboardHref: string | null }) => {
   );
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-card/90 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b bg-card/80 backdrop-blur-xl" style={{ viewTransitionName: "app-navbar" }}>
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
         <Brand />
-        <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
-          {LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              aria-current={isActive(link.href) ? "page" : undefined}
-              className={cn(
-                "rounded-lg px-3 py-2 text-[13px] font-medium transition-colors hover:bg-muted",
-                isActive(link.href) ? "text-primary" : "text-muted-foreground",
-              )}
-            >
-              {link.title}
-            </Link>
-          ))}
+        {/* the active page sits on a pill that glides to the new link; a lighter one follows the pointer */}
+        <nav aria-label="Main" className="hidden items-center gap-1 md:flex" onMouseLeave={() => setHovered(null)}>
+          {LINKS.map((link) => {
+            const active = isActive(link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={active ? "page" : undefined}
+                onMouseEnter={() => setHovered(link.href)}
+                onFocus={() => setHovered(link.href)}
+                onBlur={() => setHovered(null)}
+                className={cn(
+                  "relative isolate rounded-lg px-3 py-2 text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                  active ? "text-primary" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {active && (
+                  <motion.span layoutId="public-nav-active" transition={springs.pill} className="absolute inset-0 -z-10 rounded-lg bg-accent" aria-hidden />
+                )}
+                {hovered === link.href && !active && (
+                  <motion.span layoutId="public-nav-hover" transition={springs.pill} className="absolute inset-0 -z-10 rounded-lg bg-muted" aria-hidden />
+                )}
+                {link.title}
+              </Link>
+            );
+          })}
         </nav>
         <div className="ml-auto hidden items-center gap-2 md:flex">{actions}</div>
 
