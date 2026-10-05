@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
   // the end-to-end tests build into their own folder, so they can run next to `next dev`
   distDir: process.env.NEXT_DIST_DIR || ".next",
   poweredByHeader: false,
+  images: {
+    // public Cloudinary uploads only (photos, specialty icons); private files never reach the browser
+    remotePatterns: [{ protocol: "https", hostname: "res.cloudinary.com", pathname: "/*/image/upload/**" }],
+  },
   experimental: {
     serverActions: {
       // one upload (photo or report, 5 MB max on the API) plus the form fields

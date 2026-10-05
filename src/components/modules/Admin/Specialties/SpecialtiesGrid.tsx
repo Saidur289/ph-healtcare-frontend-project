@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { deleteSpecialtyAction } from "@/app/_actions/admin.actions";
 import ConfirmActionDialog from "@/components/modules/Admin/shared/ConfirmActionDialog";
 import EmptyState from "@/components/shared/EmptyState";
@@ -55,8 +56,8 @@ const SpecialtiesGrid = () => {
             <li key={s.id} className="flex flex-col gap-3 rounded-xl border bg-card p-4 shadow-xs">
               <div className="flex items-start gap-3">
                 {s.icon ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- Cloudinary icon, small and already sized
-                  <img src={s.icon} alt="" className="h-10 w-10 rounded-lg object-cover" />
+                  // resized and converted by next/image (Cloudinary is allowed in next.config.ts)
+                  <Image src={s.icon} alt="" width={40} height={40} className="h-10 w-10 rounded-lg object-cover" />
                 ) : (
                   <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-primary">
                     <Hospital className="h-5 w-5" aria-hidden />

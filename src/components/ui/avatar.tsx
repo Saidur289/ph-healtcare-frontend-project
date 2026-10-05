@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Avatar as AvatarPrimitive } from "radix-ui"
 
+import { cloudinaryResized } from "@/lib/cloudinaryImage"
 import { cn } from "@/lib/utils"
 
 function Avatar({
@@ -27,6 +28,7 @@ function Avatar({
 
 function AvatarImage({
   className,
+  src,
   ...props
 }: React.ComponentProps<typeof AvatarPrimitive.Image>) {
   return (
@@ -36,6 +38,8 @@ function AvatarImage({
         "aspect-square size-full rounded-full object-cover",
         className
       )}
+      // avatars are at most 96 px: a 192 px copy is sharp on 2x screens (not the full upload)
+      src={typeof src === "string" ? cloudinaryResized(src, 192) : src}
       {...props}
     />
   )

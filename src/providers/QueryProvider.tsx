@@ -16,6 +16,10 @@ function makeQueryClient() {
         // With SSR, we usually want to set some default staleTime
         // above 0 to avoid refetching immediately on the client
         staleTime: 60 * 1000,
+        // no refetch just because the tab got focus again (admin tables re-ran every query).
+        // Data still refreshes after mutations (invalidateQueries), on mount once stale, and
+        // where a component asks for it (e.g. the notification poll).
+        refetchOnWindowFocus: false,
       },
     },
   });

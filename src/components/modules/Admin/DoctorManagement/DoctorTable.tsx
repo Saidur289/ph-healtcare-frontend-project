@@ -92,7 +92,6 @@ const DoctorTable = ({
   } = useQuery({
     queryKey: ["doctors", "admin", queryString],
     queryFn: () => getDoctorsForAdmin(queryString),
-    refetchOnWindowFocus: "always",
   });
   const { data: specialtiesDataResponse, isLoading: isLoadingSpecialties } =
     useQuery({

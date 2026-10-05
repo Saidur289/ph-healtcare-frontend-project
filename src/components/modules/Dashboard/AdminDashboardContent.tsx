@@ -1,7 +1,7 @@
 "use client";
 
-import AppointmentBarChart from "@/components/shared/AppointmentBarChart";
-import AppointmentPieChart from "@/components/shared/AppointmentPieChart";
+import { Skeleton } from "@/components/ui/skeleton";
+import dynamic from "next/dynamic";
 import ErrorState from "@/components/shared/ErrorState";
 import StatsCard from "@/components/shared/StatsCard";
 import { formatTaka } from "@/lib/appointmentUtils";
@@ -10,11 +10,15 @@ import { getDashboardData } from "@/services/dashboard.service";
 import { IAdminDashboardData } from "@/types/dashboard.types";
 import { useQuery } from "@tanstack/react-query";
 
+// the chart library is large: load it only on this page, in the browser, after the stats
+const chartPlaceholder = () => <Skeleton className="h-[380px] w-full rounded-xl" />;
+const AppointmentBarChart = dynamic(() => import("@/components/shared/AppointmentBarChart"), { ssr: false, loading: chartPlaceholder });
+const AppointmentPieChart = dynamic(() => import("@/components/shared/AppointmentPieChart"), { ssr: false, loading: chartPlaceholder });
+
 const AdminDashboardContent = () => {
   const { data: response, refetch, isFetching } = useQuery({
     queryKey: queryKeys.adminDashboard,
     queryFn: () => getDashboardData<IAdminDashboardData>(),
-    refetchOnWindowFocus: "always",
   });
   const data = response?.data;
 
