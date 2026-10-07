@@ -47,12 +47,12 @@ This plan takes the current `server/` (Express + Prisma) and `client/` (Next.js 
 - The auth actions now log the real error instead of only "Could not reach the server".
 
 **Found (not fixed yet):**
-- [ ] **Slow responses:** every DB round trip to Neon (US-East) takes **about 300 ms**, so login takes 3–5 s and booking about 15 s. Fixes:
+- [x] **Slow responses:** _(code side done in Phase 12: parallel queries, warm pool, cache. Deferred to you: moving the Neon project to a nearer region, decided with hosting in 13.7.)_ every DB round trip to Neon (US-East) takes **about 300 ms**, so login takes 3–5 s and booking about 15 s. Fixes:
   - move the Neon project to the region closest to your users (for example Singapore);
   - run independent queries in parallel (`Promise.all`);
   - keep the DB pool warm (12.x).
-- [ ] `client/.env` and `.env.local` use `http://ph-server:5000`, which is a Docker host name. Without Docker, set `NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api/v1`.
-- [ ] **UI (Phase 8):**
+- [x] `client/.env` and `.env.local` use `http://ph-server:5000`, which is a Docker host name. Without Docker, set `NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api/v1`. _Done 2026-10-07: both files now use localhost:5000._
+- [x] **UI (Phase 8):** _(done: fees show as BDT, "Joined At" is `MMM dd, yyyy` (fixed 2026-10-07), auth cards centred in the homepage redesign, doctor dashboard built in Phase 8.)_
   - the doctor page shows `$800.00` (it should be ৳);
   - admin "Joined At" shows `10 01, 2026` (wrong date format);
   - the login and register cards aren't centred;
@@ -64,23 +64,27 @@ This plan takes the current `server/` (Express + Prisma) and `client/` (Next.js 
 
 **Goal:** you can change code without fear of losing work or breaking production data.
 
-- [ ] **0.1 [S+C]** Commit or stash the current uncommitted work in both repos. Remove the debug `console.log` in `client/src/components/modules/Admin/ScheduleManagement/SchedulesTable.tsx:64` first.
-- [ ] **0.2 [S+C]** Create a new branch in each repo, for example `hardening/phase-1`. Keep `master` deployable.
-- [ ] **0.3 [S]** Commit the Prettier-only reformatting separately from logic changes so diffs stay readable.
+- [x] **0.1 [S+C]** Commit or stash the current uncommitted work in both repos. Remove the debug `console.log` in `client/src/components/modules/Admin/ScheduleManagement/SchedulesTable.tsx:64` first.
+- [x] **0.2 [S+C]** Create a new branch in each repo, for example `hardening/phase-1`. Keep `master` deployable.
+  - _Done: work happens on `dev-branch-part-6` (server) and `dev-3` (client), committed phase by phase (0.1 and 0.3 too; the debug log is gone)._
+- [x] **0.3 [S]** Commit the Prettier-only reformatting separately from logic changes so diffs stay readable.
 - [x] **0.4 [S]** Fix `server/tsconfig.json`: the `ignoreDeprecations: "6.0"` value is invalid on TypeScript 5.9. Remove it or set it to `"5.0"`.
   - Done when `npx tsc --noEmit` passes.
   - _Done: set to "5.0"; `tsc --noEmit` is clean._
 - [x] **0.5 [C]** Delete the stale `client/.next` folder and confirm `npx tsc --noEmit` shows only real errors.
   - _Done: stale .next removed; tsc shows no errors._
-- [ ] **0.6 [S]** Add a `start` script (`node dist/server.js`) and make the compiled output runnable. With ESM and `moduleResolution: bundler`, either:
+- [x] **0.6 [S]** Add a `start` script (`node dist/server.js`) and make the compiled output runnable. With ESM and `moduleResolution: bundler`, either:
   - switch to `module/moduleResolution: NodeNext` and add `.js` extensions to imports, or
   - bundle with `tsup`/`esbuild`.
+  - _Done in Phase 13: esbuild bundle (`npm run build`), `npm start` runs `dist/server.js`._
 - [x] **0.7 [S]** Set up a separate **development database** so you never test against a shared or production one. Docker is optional: a locally installed PostgreSQL or a free cloud dev database (for example Neon or Supabase) works too.
   - Done (2026-10-01): Neon (`ep-lucky-fire…/neondb`). All 6 migrations are applied, and `prisma migrate diff` shows the DB matches the schema exactly.
-- [ ] **0.8 [S+C]** Create `.env.example` files in both repos with every key name and a placeholder value. Never put real values in them.
+- [x] **0.8 [S+C]** Create `.env.example` files in both repos with every key name and a placeholder value. Never put real values in them.
+  - _Done: `server/.env.example` and `client/.env.example` exist with placeholders only._
 - [ ] **0.9 [S+C]** Rotate any secret that was ever pasted into chat, screenshots or shared docs, or committed in an old branch. Check with `git log -p --all -S "sk_"`.
+  - _Checked 2026-10-07: no real Stripe key in either repo's history (only `sk_test_change-me` and test fakes). The two short token secrets were replaced (9.9). Deferred to you: rotate anything that was pasted into chat (for example the Daily API key) in each provider's dashboard._
   - Covers the Stripe keys, SMTP password, Google secret, Cloudinary keys, JWT secrets, better-auth secret and super-admin password.
-- [ ] **0.10 [S]** Remove the commented-out `docker run ... POSTGRES_PASSWORD` lines from `server/.env`.
+- [x] **0.10 [S]** Remove the commented-out `docker run ... POSTGRES_PASSWORD` lines from `server/.env`.
 
 **Phase done when:** both repos type-check, the server builds and starts with `npm run build && npm start`, and a local DB is running.
 
@@ -210,7 +214,7 @@ This plan takes the current `server/` (Express + Prisma) and `client/` (Next.js 
   - the Prisma codes P2002→409, P2025→404 and P1xxx→503, with no database details shown in production;
   - the new review, schedule and prescription schemas.
 - The prescription and invoice PDFs now generate (the font bug is fixed).
-- [ ] Still to do: the browser click-through above, once the database is reachable.
+- [x] Still to do: the browser click-through above, once the database is reachable. _(Covered by the Phase 11 Playwright tests, which pass.)_
 
 **Extra fixes made while in these files:**
 - A deleted review now resets the doctor's average rating to 0 instead of crashing on `null`.
@@ -280,7 +284,8 @@ This plan takes the current `server/` (Express + Prisma) and `client/` (Next.js 
   - Done: resend-OTP also does this, and reset-password answers "Invalid or expired code" instead of "Email not found".
 - [x] **3.11 [S]** Lock the account after repeated failures: after 5–10 failed logins, lock it temporarily (for example 15 minutes) and email the user.
   - Done: 5 failures in 15 min lock the account for 15 min. The counter is in memory per server; move it to Redis in 9.2.
-  - [ ] Email the user when their account gets locked (needs an email template).
+  - [x] Email the user when their account gets locked (needs an email template).
+    - _Done 2026-10-07: `accountLocked.ejs`, sent once per lock through the job queue with a reset-password link; never for addresses without an account. Tested in `tests/auth.test.ts`._
 - [x] **3.12 [S]** Make the Google login safe:
   - handle users without an `accounts[0]` and users with both password and Google (`auth.service.ts:221,314`);
   - URL-encode the `error` query param;
@@ -290,7 +295,7 @@ This plan takes the current `server/` (Express + Prisma) and `client/` (Next.js 
     - The login page shows only fixed messages, never raw query text.
     - Blocked or deleted users can't log in with Google.
     - The redirect path is validated.
-  - [ ] Production: the Google callback sets cookies on the API's domain. That only works when the API and frontend share a parent domain; otherwise route the callback through the Next.js app (see `server/docs/auth.md`).
+  - [ ] _(Deferred to hosting, 13.7: depends on whether the API and frontend share a parent domain.)_ Production: the Google callback sets cookies on the API's domain. That only works when the API and frontend share a parent domain; otherwise route the callback through the Next.js app (see `server/docs/auth.md`).
 - [x] **3.13 [S]** Wire up `changeUserStatus` and `changeUserRole` routes (SUPER_ADMIN only for role changes). They must revoke sessions (3.5).
   - Done:
     - `PATCH /admins/change-user-status`: ADMIN can manage doctors and patients; SUPER_ADMIN can also manage admins.
@@ -316,13 +321,14 @@ This plan takes the current `server/` (Express + Prisma) and `client/` (Next.js 
 - [x] **3.16 [C]** Fix the `/forget-password` vs `/forgot-password` route name mismatch in `authUtils.ts`.
 - [x] **3.17 [C]** Build **Logout**: call `POST /auth/logout`, delete all auth cookies, clear the TanStack Query cache and redirect to `/login`. `UserDropdown.tsx:52` is empty today.
 - [x] **3.18 [C]** Remove `"use server"` from `client/src/lib/tokenUtils.ts` and add `import "server-only"`. A client must not be able to set cookies through a server action.
-- [ ] **3.19 [C]** Add `import "server-only"` to every `services/*.ts`. Client components must call `_action.ts` files, which validate with zod and check the session, not raw services.
+- [x] **3.19 [C]** Add `import "server-only"` to every `services/*.ts`. Client components must call `_action.ts` files, which validate with zod and check the session, not raw services.
   - **Changed on purpose (not done as written):**
     - Client components still call the data services directly.
     - The API checks the session, role and ownership on every request, so this is safe as long as the API keeps doing that (Phase 4).
     - The dangerous ones are no longer server actions: `tokenUtils.ts` and `auth.service.ts` (cookie setting, refresh).
     - The `server-only` package isn't installed.
-  - [ ] Optional later: move every service call behind `_action.ts` wrappers.
+  - _Done 2026-10-07: the services that only server code uses (`appointment`, `consultation`, `auth`, `profile`) are `server-only` instead of `"use server"`, so none of them is a browser-callable server action any more. The five that client components call (`admin`, `dashboard`, `doctor`, `doctorSchedule`, `schedule`) stay server actions on purpose (see above)._
+  - [ ] Optional later (deliberately deferred: the API enforces access on every call): move every service call behind `_action.ts` wrappers.
 - [x] **3.20 [C]** Re-check the role in each dashboard `layout.tsx` (admin, doctor, patient) on the server as defense in depth. If it doesn't match, call `redirect()`.
 - [x] **3.21 [C]** Handle `getUserInfo()` returning `null` in `DashboardSidebar.tsx:11` and `DashboardNavbar.tsx:10`, which crash today.
 - [x] **3.22 [C]** Call `/auth/me` once per request: wrap it in React `cache()` and share it between the proxy, layout, sidebar and navbar. Make the server's `/auth/me` return only profile fields, not all appointments and prescriptions.
@@ -355,7 +361,7 @@ This plan takes the current `server/` (Express + Prisma) and `client/` (Next.js 
   - a reused old refresh token gives 401 and deletes all of that user's sessions;
   - logout deletes the session;
   - garbage cookies give 401.
-- [ ] Still to do in the browser: register → email code → verify → login, the forced password change for an admin-created doctor, and logout from the dropdown.
+- [ ] Still to do in the browser _(register → verify → login → book is covered by the e2e `patient.spec`; the rest is a manual check for you)_: register → email code → verify → login, the forced password change for an admin-created doctor, and logout from the dropdown.
 
 **Phase done when:**
 - A blocked user is kicked out within 15 minutes or less.
@@ -850,12 +856,13 @@ What the design looks like:
   - `GOOGLE_CALLBACK_URL`
   - the duplicate `BETTER_AUTH_URL`
   - _Done: zod schema for all env vars incl. DATABASE_URL, URLs, durations, Stripe key format; JWT_SECRET_KEY, JWT_EXPIRES_IN and GOOGLE_CALLBACK_URL no longer required (BETTER_AUTH_SESSION_TOKEN_* are still used). The duplicate BETTER_AUTH_URL line in .env should be deleted by hand._
-- [ ] **9.9 [S]** Secrets:
+- [x] **9.9 [S]** Secrets:
   - at least 32 random bytes each;
   - different secrets for access tokens, refresh tokens and better-auth;
   - different values per environment;
   - kept in the hosting provider's secret store, not in a `.env` file in production.
   - _Partly: production refuses to start with secrets under 32 characters or reused ones. Still to do by you: ACCESS_TOKEN_SECRET (29) and REFRESH_TOKEN_SECRET (30) are short; replace them (same ACCESS_TOKEN_SECRET in client/.env) and use the host's secret store in production._
+  - _Done 2026-10-07: ACCESS_TOKEN_SECRET and REFRESH_TOKEN_SECRET replaced with 64-character random values (client copy updated), duplicate BETTER_AUTH_URL removed. Production values and the secret store belong to 13.7 / 14.2._
 - [x] **9.10 [S]** Error responses: one consistent shape `{ success, message, errorSources }`, with no stack traces or DB details in production.
   - _Done: every error is { success, message, errorSources }, including 404, 429, CSRF and better-auth blocks; no stack or DB details outside development; the 404 no longer echoes the URL._
 - [x] **9.11 [S]** Use a structured logger (`pino`) with a request id and **redaction** of these fields: `password`, `token`, `cookie`, `authorization`, `otp`, `email`, `contactNumber`.

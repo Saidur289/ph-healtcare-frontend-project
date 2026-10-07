@@ -1,5 +1,6 @@
 // Server-side helpers for the /auth API. Not a "use server" module: nothing here
 // should be callable from the browser directly (the page actions call these).
+import "server-only";
 import { cache } from "react";
 import { cookies } from "next/headers";
 import { unstable_rethrow } from "next/navigation";

@@ -1,4 +1,6 @@
-"use server";
+// server-only (not "use server"): only server components and the validated _actions call these,
+// so none of them is exposed to the browser as a callable server action
+import "server-only";
 
 // Thin API wrappers. The API checks the session, role and ownership on every call;
 // pages and components should call the validated actions in app/_actions/consultation.actions.ts.
