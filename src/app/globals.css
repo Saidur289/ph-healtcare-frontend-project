@@ -217,8 +217,9 @@
   background-color: var(--glass-bg);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
-  backdrop-filter: blur(24px) saturate(1.4);
   -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  /* unprefixed last: Lightning CSS keeps only the last of the two, and Chromium ignores the prefixed one */
+  backdrop-filter: blur(24px) saturate(1.4);
 }
 [data-surface="portal"] {
   /* soft ambient light behind the glass (fixed, so it doesn't scroll with the content) */
@@ -233,8 +234,8 @@
   background-color: var(--glass-bg);
   border-color: var(--glass-border);
   box-shadow: var(--glass-shadow);
-  backdrop-filter: blur(24px) saturate(1.4);
   -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  backdrop-filter: blur(24px) saturate(1.4);
 }
 /* floating layers (dialogs, menus, popovers) are glass everywhere */
 [data-slot="dialog-content"],
@@ -243,8 +244,8 @@
 [data-slot="popover-content"] {
   background-color: var(--glass-bg-strong);
   border-color: var(--glass-border);
-  backdrop-filter: blur(24px) saturate(1.4);
   -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  backdrop-filter: blur(24px) saturate(1.4);
 }
 
 /* ---------- reduced motion: no movement anywhere ---------- */
@@ -254,6 +255,14 @@
   ::view-transition-group(*) {
     animation-duration: 0s !important;
     animation-delay: 0s !important;
+  }
+  /* CSS-animated dialogs (tw-animate-css, outside MotionConfig): keep the fade, drop the slide and zoom */
+  [data-slot="dialog-content"],
+  [data-slot="alert-dialog-content"] {
+    --tw-enter-translate-y: 0;
+    --tw-enter-scale: 1;
+    --tw-exit-scale: 1;
+    animation-duration: 150ms;
   }
 }
 /* browsers without backdrop-filter get an almost opaque surface (readable text) */

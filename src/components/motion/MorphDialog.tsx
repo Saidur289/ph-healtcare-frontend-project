@@ -23,11 +23,25 @@ interface MorphDialogProps {
   className?: string;
   children: ReactNode;
   showCloseButton?: boolean;
+  // long forms: a stray click outside or Escape must not throw the typed input away (close with
+  // the X or Cancel instead)
+  preventDismiss?: boolean;
 }
 
 const RADIUS = 14;
+const keepOpen = (event: Event) => event.preventDefault();
 
-export function MorphDialog({ layoutId, open, onOpenChange, trigger, triggerClassName, className, children, showCloseButton = true }: MorphDialogProps) {
+export function MorphDialog({
+  layoutId,
+  open,
+  onOpenChange,
+  trigger,
+  triggerClassName,
+  className,
+  children,
+  showCloseButton = true,
+  preventDismiss = false,
+}: MorphDialogProps) {
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       {open ? (
@@ -55,7 +69,12 @@ export function MorphDialog({ layoutId, open, onOpenChange, trigger, triggerClas
             </DialogPrimitive.Overlay>
             {/* centring with flexbox: the panel's own transform belongs to the morph */}
             <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4">
-              <DialogPrimitive.Content asChild forceMount>
+              <DialogPrimitive.Content
+                asChild
+                forceMount
+                onInteractOutside={preventDismiss ? keepOpen : undefined}
+                onEscapeKeyDown={preventDismiss ? keepOpen : undefined}
+              >
                 <motion.div
                   layoutId={layoutId}
                   transition={springs.morph}

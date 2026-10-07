@@ -1,5 +1,6 @@
 import AdminDashboardContent from "@/components/modules/Dashboard/AdminDashboardContent";
 import DashboardGreeting from "@/components/modules/Dashboard/DashboardGreeting";
+import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import { queryKeys } from "@/lib/queryKeys";
 import { getUserInfo } from "@/services/auth.service";
 import { getDashboardData } from "@/services/dashboard.service";
@@ -18,12 +19,16 @@ const AdminDashboardPage = async () => {
   ]);
 
   return (
-    <div className="space-y-6">
-      <DashboardGreeting name={user?.name ?? "Admin"} />
-      <HydrationBoundary state={dehydrate(queryClient)}>
-        <AdminDashboardContent />
-      </HydrationBoundary>
-    </div>
+    <Stagger className="space-y-6">
+      <StaggerItem>
+        <DashboardGreeting name={user?.name ?? "Admin"} />
+      </StaggerItem>
+      <StaggerItem>
+        <HydrationBoundary state={dehydrate(queryClient)}>
+          <AdminDashboardContent />
+        </HydrationBoundary>
+      </StaggerItem>
+    </Stagger>
   );
 };
 

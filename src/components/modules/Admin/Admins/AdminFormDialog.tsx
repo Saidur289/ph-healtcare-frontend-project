@@ -1,15 +1,8 @@
 "use client";
 import { createAdminAction, updateAdminAction } from "@/app/_actions/admin.actions";
+import { MorphDialog } from "@/components/motion/MorphDialog";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { IAdminUser } from "@/types/admin.types";
@@ -66,16 +59,17 @@ const AdminFormDialog = ({ admin }: { admin?: IAdminUser }) => {
   );
 
   return (
-    <Dialog
+    // the Add / Edit button grows into the form
+    <MorphDialog
+      layoutId={prefix}
       open={open}
       onOpenChange={(next) => {
         if (pending) return;
         setOpen(next);
         if (!next) setErrors({});
       }}
-    >
-      <DialogTrigger asChild>
-        {admin ? (
+      trigger={
+        admin ? (
           <Button size="sm" variant="outline" className="h-8">
             Edit
           </Button>
@@ -83,32 +77,31 @@ const AdminFormDialog = ({ admin }: { admin?: IAdminUser }) => {
           <Button size="sm">
             <Plus className="h-4 w-4" aria-hidden /> Add admin
           </Button>
-        )}
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{admin ? `Edit ${admin.name}` : "New admin"}</DialogTitle>
-          <DialogDescription>
-            {admin ? "Name and phone. The email can't be changed." : "They log in with this email and must set their own password first."}
-          </DialogDescription>
-        </DialogHeader>
-        <form id={`${prefix}-form`} onSubmit={submit} noValidate className="space-y-4">
-          {field("name", "Full name", { defaultValue: admin?.name, maxLength: 60, autoComplete: "off" })}
-          {!admin && field("email", "Email", { type: "email", maxLength: 254, autoComplete: "off" })}
-          {field("contactNumber", "Phone (optional)", { type: "tel", defaultValue: admin?.contactNumber ?? "", maxLength: 14 })}
-          {!admin && field("password", "Temporary password", { type: "password", maxLength: 128, autoComplete: "new-password" })}
-        </form>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>
-            Cancel
-          </Button>
-          <Button type="submit" form={`${prefix}-form`} disabled={pending}>
-            {pending && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
-            {admin ? "Save" : "Create admin"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        )
+      }
+    >
+      <div className="space-y-1.5 border-b px-6 py-5 pr-14">
+        <DialogTitle className="text-lg font-semibold">{admin ? `Edit ${admin.name}` : "New admin"}</DialogTitle>
+        <DialogDescription className="text-muted-foreground">
+          {admin ? "Name and phone. The email can't be changed." : "They log in with this email and must set their own password first."}
+        </DialogDescription>
+      </div>
+      <form id={`${prefix}-form`} onSubmit={submit} noValidate className="space-y-4 overflow-y-auto px-6 py-5">
+        {field("name", "Full name", { defaultValue: admin?.name, maxLength: 60, autoComplete: "off" })}
+        {!admin && field("email", "Email", { type: "email", maxLength: 254, autoComplete: "off" })}
+        {field("contactNumber", "Phone (optional)", { type: "tel", defaultValue: admin?.contactNumber ?? "", maxLength: 14 })}
+        {!admin && field("password", "Temporary password", { type: "password", maxLength: 128, autoComplete: "new-password" })}
+      </form>
+      <div className="flex flex-col-reverse gap-2 border-t px-6 py-4 sm:flex-row sm:justify-end">
+        <Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>
+          Cancel
+        </Button>
+        <Button type="submit" form={`${prefix}-form`} disabled={pending}>
+          {pending && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
+          {admin ? "Save" : "Create admin"}
+        </Button>
+      </div>
+    </MorphDialog>
   );
 };
 

@@ -25,8 +25,15 @@ test("an admin creates a doctor and a schedule, and views payments", async ({ pa
   await form.getByRole("button", { name: "Select specialties" }).click();
   await page.getByRole("menuitem", { name: specialty.title }).click();
   await page.keyboard.press("Escape");
+  await expect(page.getByRole("menu")).toBeHidden();
+  // the long form refuses Escape and outside clicks, so nothing typed is lost
+  await page.keyboard.press("Escape");
+  await page.mouse.click(5, 5);
+  await expect(form).toBeVisible();
+  await expect(form.getByLabel("Full Name")).toHaveValue("Tanvir Hasan");
   await form.getByRole("button", { name: "Create Doctor" }).click();
   await expect(page.getByText(/Doctor created successfully|created/i).first()).toBeVisible();
+  await expect(form).toBeHidden();
   await expect(page.getByText(email).first()).toBeVisible();
 
   // create a schedule for tomorrow, 10:00-11:00 (two 30-minute slots)
@@ -38,8 +45,12 @@ test("an admin creates a doctor and a schedule, and views payments", async ({ pa
   await scheduleForm.getByLabel("End Date").fill(tomorrow);
   await scheduleForm.getByLabel("Start Time").fill("10:00");
   await scheduleForm.getByLabel("End Time").fill("11:00");
+  await page.keyboard.press("Escape");
+  await expect(scheduleForm).toBeVisible();
+  await expect(scheduleForm.getByLabel("Start Date")).toHaveValue(tomorrow);
   await scheduleForm.getByRole("button", { name: "Create Schedule" }).click();
   await expect(page.getByText(/schedules? created successfully/i).first()).toBeVisible();
+  await expect(scheduleForm).toBeHidden();
 
   // payments
   await page.goto("/admin/dashboard/payments-management");
