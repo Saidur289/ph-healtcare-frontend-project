@@ -194,7 +194,10 @@ export interface IUpdateDoctorPayload {
    DOCTOR DETAILS
 ========================= */
 
-export interface IDoctorDetails extends IDoctors {
+// the detail endpoints (public profile, admin view) return specialties flat, not wrapped in { specialty }
+export interface IDoctorDetails extends Omit<IDoctors, "specialties"> {
+  specialties: Array<{ id: string; title: string; icon: string | null }>;
+
   user: IDoctorUserDetails;
 
   appointments?: IDoctorAppointmentItem[];

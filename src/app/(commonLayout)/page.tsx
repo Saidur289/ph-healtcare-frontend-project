@@ -6,6 +6,8 @@ import reviewingHistory from "@/assets/home/reviewing-history.webp";
 import writingPrescription from "@/assets/home/writing-prescription.webp";
 import DoctorRow from "@/components/modules/Public/DoctorRow";
 import HeroSearch from "@/components/modules/Public/HeroSearch";
+import { Magnetic } from "@/components/motion/Magnetic";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion/Stagger";
 import { Button } from "@/components/ui/button";
 import { getAllSpecialties, getDoctors } from "@/services/doctor.services";
 import { IDoctors } from "@/types/doctor.types";
@@ -59,14 +61,14 @@ const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-
 
 // a term/description list with 1px rules between items
 const FactList = ({ items }: { items: { term: string; text: string }[] }) => (
-  <dl className="divide-y border-y">
+  <Stagger as="dl" inView className="divide-y border-y">
     {items.map(({ term, text }) => (
-      <div key={term} className="grid gap-1 py-5 sm:grid-cols-[11rem_1fr] sm:gap-6">
+      <StaggerItem key={term} className="grid gap-1 py-5 sm:grid-cols-[11rem_1fr] sm:gap-6">
         <dt className="text-base font-semibold">{term}</dt>
         <dd className="text-base leading-relaxed text-muted-foreground">{text}</dd>
-      </div>
+      </StaggerItem>
     ))}
-  </dl>
+  </Stagger>
 );
 
 export default async function HomePage() {
@@ -166,7 +168,7 @@ export default async function HomePage() {
       {/* how it works: photo + three numbered steps, uneven columns */}
       <section id="how-it-works" className="scroll-mt-20">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[1fr_1.35fr] lg:gap-20 lg:px-8 lg:py-24">
-          <div className="min-w-0">
+          <Reveal className="min-w-0">
             <h2 className="font-display text-4xl font-medium leading-tight tracking-[-0.01em] sm:text-5xl">
               From search to prescription in three steps.
             </h2>
@@ -177,10 +179,10 @@ export default async function HomePage() {
               sizes="(min-width: 1024px) 38vw, 100vw"
               className="mt-10 aspect-[4/3] w-full rounded-lg border object-cover"
             />
-          </div>
-          <ol className="min-w-0 divide-y border-y lg:self-end">
+          </Reveal>
+          <Stagger as="ol" inView className="min-w-0 divide-y border-y lg:self-end">
             {STEPS.map(({ title, text }, index) => (
-              <li key={title} className="grid grid-cols-[3.5rem_1fr] gap-5 py-8 sm:grid-cols-[5rem_1fr]">
+              <StaggerItem as="li" key={title} className="grid grid-cols-[3.5rem_1fr] gap-5 py-8 sm:grid-cols-[5rem_1fr]">
                 <span className="font-display text-6xl font-medium leading-none text-muted-foreground sm:text-7xl" aria-hidden>
                   {index + 1}
                 </span>
@@ -191,9 +193,9 @@ export default async function HomePage() {
                   </h3>
                   <p className="mt-2 max-w-[36rem] text-base leading-relaxed text-muted-foreground">{text}</p>
                 </div>
-              </li>
+              </StaggerItem>
             ))}
-          </ol>
+          </Stagger>
         </div>
       </section>
 
@@ -209,9 +211,9 @@ export default async function HomePage() {
                 Not sure who to see? Start with the area that matches your concern; each list shows fees and ratings.
               </p>
             </div>
-            <ul className="grid grid-cols-1 gap-x-10 sm:grid-cols-2">
+            <Stagger as="ul" inView className="grid grid-cols-1 gap-x-10 sm:grid-cols-2">
               {specialties.map((specialty) => (
-                <li key={specialty.id} className="border-b">
+                <StaggerItem as="li" key={specialty.id} className="border-b">
                   <Link
                     href={specialtyHref(specialty.title)}
                     className={`group flex min-h-14 items-center justify-between gap-4 rounded-sm py-3 font-display text-2xl transition-colors duration-100 hover:text-primary ${focusRing}`}
@@ -222,9 +224,9 @@ export default async function HomePage() {
                       aria-hidden
                     />
                   </Link>
-                </li>
+                </StaggerItem>
               ))}
-            </ul>
+            </Stagger>
           </div>
         </section>
       )}
@@ -247,11 +249,11 @@ export default async function HomePage() {
             </Link>
           </div>
           {doctors.length > 0 ? (
-            <ul className="mt-8 divide-y border-y">
+            <Stagger as="ul" inView className="mt-8 divide-y border-y">
               {doctors.map((doctor) => (
                 <DoctorRow key={String(doctor.id)} doctor={doctor} />
               ))}
-            </ul>
+            </Stagger>
           ) : (
             <div className="mt-8 rounded-lg border bg-card px-6 py-10">
               <p className="text-lg font-semibold">No doctors are listed yet.</p>
@@ -344,9 +346,11 @@ export default async function HomePage() {
               Pick a doctor and a time. You will see the fee and the cancellation terms before you confirm.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-              <Button asChild className="h-12 rounded-md px-6 text-base">
-                <Link href="/consultation">Book an appointment</Link>
-              </Button>
+              <Magnetic>
+                <Button asChild className="h-12 rounded-md px-6 text-base">
+                  <Link href="/consultation">Book an appointment</Link>
+                </Button>
+              </Magnetic>
               <Link
                 href="/login"
                 className={`inline-flex min-h-11 items-center rounded-sm font-medium text-primary underline-offset-4 hover:underline ${focusRing}`}

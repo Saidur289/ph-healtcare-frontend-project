@@ -201,12 +201,8 @@ const ViewDoctorProfileDialog = ({
                           item: IDoctorDetails["specialties"][number],
                           index: number,
                         ) => {
-                          const specialtyTitle =
-                            item.specialty?.title || item.specialtyId || "N/A";
-                          const specialtyKey =
-                            item.specialty?.id ||
-                            item.specialtyId ||
-                            `specialty-${index}`;
+                          const specialtyTitle = item.title || "N/A";
+                          const specialtyKey = item.id || `specialty-${index}`;
                           return (
                             <Badge key={specialtyKey} variant="secondary">
                               {specialtyTitle}

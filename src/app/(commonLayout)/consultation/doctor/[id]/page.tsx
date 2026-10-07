@@ -1,5 +1,6 @@
 import BookAppointmentModal from "@/components/modules/Patient/Appointments/BookAppointmentModal";
 import EmptyState from "@/components/shared/EmptyState";
+import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { formatTaka } from "@/lib/appointmentUtils";
@@ -87,14 +88,17 @@ const ConsultationDoctorByIdPage = async ({ params }: { params: Promise<{ id: st
     />
   );
 
+  // the profile, then slots and reviews, cascade in
   return (
-    <section className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-      <Link href="/consultation" className="inline-flex items-center gap-1 text-[13px] font-medium text-muted-foreground hover:text-primary">
-        <ArrowLeft className="h-4 w-4" aria-hidden /> All doctors
-      </Link>
+    <Stagger as="section" className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+      <StaggerItem>
+        <Link href="/consultation" className="inline-flex items-center gap-1 text-[13px] font-medium text-muted-foreground hover:text-primary">
+          <ArrowLeft className="h-4 w-4" aria-hidden /> All doctors
+        </Link>
+      </StaggerItem>
 
       {/* profile header */}
-      <div className="flex flex-col gap-5 rounded-xl border bg-card p-6 shadow-xs md:flex-row md:items-center">
+      <StaggerItem className="flex flex-col gap-5 rounded-xl border bg-card p-6 shadow-xs md:flex-row md:items-center">
         <Avatar className="size-24">
           <AvatarImage src={doctor.profilePhoto} alt="" />
           <AvatarFallback className="bg-accent text-2xl font-semibold text-accent-foreground">{initials(doctor.name)}</AvatarFallback>
@@ -126,8 +130,8 @@ const ConsultationDoctorByIdPage = async ({ params }: { params: Promise<{ id: st
           </div>
           <div className="flex flex-wrap gap-1.5 pt-1">
             {(doctor.specialties ?? []).map((item) => (
-              <span key={item.specialty.id} className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-accent-foreground">
-                {item.specialty.title}
+              <span key={item.id} className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-accent-foreground">
+                {item.title}
               </span>
             ))}
           </div>
@@ -137,9 +141,9 @@ const ConsultationDoctorByIdPage = async ({ params }: { params: Promise<{ id: st
           <p className="text-2xl font-semibold">{formatTaka(doctor.appointmentFee)}</p>
           {book}
         </div>
-      </div>
+      </StaggerItem>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <StaggerItem className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="min-w-0 space-y-6 lg:col-span-2">
           {/* available slots */}
           <div className="rounded-xl border bg-card p-5 shadow-xs">
@@ -152,9 +156,9 @@ const ConsultationDoctorByIdPage = async ({ params }: { params: Promise<{ id: st
                 <CalendarX className="h-5 w-5" aria-hidden /> No free slots right now. Check back soon.
               </div>
             ) : (
-              <div className="mt-4 space-y-4">
+              <Stagger className="mt-4 space-y-4">
                 {slotDays.map(([key, day]) => (
-                  <div key={key} className="grid gap-2 sm:grid-cols-[110px_1fr] sm:items-start">
+                  <StaggerItem key={key} className="grid gap-2 sm:grid-cols-[110px_1fr] sm:items-start">
                     <p className="pt-1.5 text-[13px] font-medium">{day.label}</p>
                     <div className="flex flex-wrap gap-2">
                       {day.times.map((time) => (
@@ -163,9 +167,9 @@ const ConsultationDoctorByIdPage = async ({ params }: { params: Promise<{ id: st
                         </span>
                       ))}
                     </div>
-                  </div>
+                  </StaggerItem>
                 ))}
-              </div>
+              </Stagger>
             )}
           </div>
 
@@ -177,9 +181,9 @@ const ConsultationDoctorByIdPage = async ({ params }: { params: Promise<{ id: st
                 <MessageSquare className="h-5 w-5" aria-hidden /> No reviews yet.
               </div>
             ) : (
-              <ul className="mt-4 divide-y">
+              <Stagger as="ul" inView className="mt-4 divide-y">
                 {reviews.map((review, index) => (
-                  <li key={review.id ?? index} className="flex gap-3 py-4 first:pt-0 last:pb-0">
+                  <StaggerItem as="li" key={review.id ?? index} className="flex gap-3 py-4 first:pt-0 last:pb-0">
                     <Avatar className="h-9 w-9">
                       <AvatarImage src={review.patient?.profilePhoto || undefined} alt="" />
                       <AvatarFallback className="bg-accent text-xs font-semibold text-accent-foreground">
@@ -197,9 +201,9 @@ const ConsultationDoctorByIdPage = async ({ params }: { params: Promise<{ id: st
                       {/* plain text: React escapes it, and the API strips HTML on save */}
                       <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">{review.comment}</p>
                     </div>
-                  </li>
+                  </StaggerItem>
                 ))}
-              </ul>
+              </Stagger>
             )}
           </div>
         </div>
@@ -227,8 +231,8 @@ const ConsultationDoctorByIdPage = async ({ params }: { params: Promise<{ id: st
             <div className="border-t pt-3 text-xs text-muted-foreground">Registration no. {doctor.registrationNumber}</div>
           </dl>
         </div>
-      </div>
-    </section>
+      </StaggerItem>
+    </Stagger>
   );
 };
 

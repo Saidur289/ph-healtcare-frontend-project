@@ -1,3 +1,4 @@
+import { StaggerItem } from "@/components/motion/Stagger";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { formatTaka } from "@/lib/appointmentUtils";
@@ -14,7 +15,7 @@ const DoctorRow = ({ doctor }: { doctor: IDoctors }) => {
   const profileHref = `/consultation/doctor/${doctor.id}`;
 
   return (
-    <li className="grid grid-cols-[auto_1fr] items-start gap-x-4 gap-y-4 py-6 lg:grid-cols-[auto_minmax(0,1fr)_10rem_10rem_12rem] lg:items-center lg:gap-x-6">
+    <StaggerItem as="li" className="grid grid-cols-[auto_1fr] items-start gap-x-4 gap-y-4 py-6 lg:grid-cols-[auto_minmax(0,1fr)_10rem_10rem_12rem] lg:items-center lg:gap-x-6">
       <Avatar className="size-16 rounded-md after:rounded-md">
         <AvatarImage src={doctor.profilePhoto} alt="" className="rounded-md object-cover" />
         <AvatarFallback className="rounded-md bg-accent text-lg font-semibold text-accent-foreground">
@@ -75,7 +76,7 @@ const DoctorRow = ({ doctor }: { doctor: IDoctors }) => {
           </Link>
         </Button>
       </div>
-    </li>
+    </StaggerItem>
   );
 };
 

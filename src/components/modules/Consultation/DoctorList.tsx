@@ -7,6 +7,8 @@ import DataTableFilters, {
 import DataTableSearch from "@/components/shared/table/DataTableSearch";
 import BookAppointmentModal from "@/components/modules/Patient/Appointments/BookAppointmentModal";
 import DoctorCard from "@/components/modules/Public/DoctorCard";
+import { Stagger, StaggerItem } from "@/components/motion/Stagger";
+import { springs } from "@/lib/motion";
 import EmptyState from "@/components/shared/EmptyState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SearchX } from "lucide-react";
@@ -258,7 +260,8 @@ const DoctorsList = ({
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Find a doctor</h1>
         <p className="mt-1 text-[13px] text-muted-foreground">
-          Compare specialists by fee, experience and rating, then book a video consultation.
+          Compare specialists by fee, experience and rating, then book a video
+          consultation.
         </p>
       </div>
 
@@ -323,7 +326,11 @@ const DoctorsList = ({
       </div>
 
       {isBusy && (
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3" aria-busy="true" aria-label="Loading doctors">
+        <div
+          className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
+          aria-busy="true"
+          aria-label="Loading doctors"
+        >
           {Array.from({ length: 6 }, (_, i) => (
             <Skeleton key={i} className="h-64 rounded-xl" />
           ))}
@@ -345,24 +352,35 @@ const DoctorsList = ({
 
       {!isBusy && doctors.length > 0 && (
         <>
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          {/* each new result set cascades in; cards lift toward the pointer */}
+          <Stagger
+            key={queryString}
+            className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"
+          >
             {doctors.map((doctor: IDoctors) => (
-              <DoctorCard
+              <StaggerItem
                 key={String(doctor.id)}
-                doctor={doctor}
-                action={
-                  <BookAppointmentModal
-                    doctorId={String(doctor.id)}
-                    doctorName={doctor.name}
-                    isAuthenticated={isAuthenticated}
-                    viewerRole={viewerRole}
-                    triggerClassName="w-full"
-                    fullWidth
-                  />
-                }
-              />
+                whileHover={{ y: -4 }}
+                transition={springs.snappy}
+                className="h-full"
+              >
+                <DoctorCard
+                  key={String(doctor.id)}
+                  doctor={doctor}
+                  action={
+                    <BookAppointmentModal
+                      doctorId={String(doctor.id)}
+                      doctorName={doctor.name}
+                      isAuthenticated={isAuthenticated}
+                      viewerRole={viewerRole}
+                      triggerClassName="w-full"
+                      fullWidth
+                    />
+                  }
+                />
+              </StaggerItem>
             ))}
-          </div>
+          </Stagger>
 
           <div className="space-y-3 pt-2">
             <Pagination
