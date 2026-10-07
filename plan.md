@@ -295,7 +295,8 @@ This plan takes the current `server/` (Express + Prisma) and `client/` (Next.js 
     - The login page shows only fixed messages, never raw query text.
     - Blocked or deleted users can't log in with Google.
     - The redirect path is validated.
-  - [ ] _(Deferred to hosting, 13.7: depends on whether the API and frontend share a parent domain.)_ Production: the Google callback sets cookies on the API's domain. That only works when the API and frontend share a parent domain; otherwise route the callback through the Next.js app (see `server/docs/auth.md`).
+  - [x] Production: the Google callback sets cookies on the API's domain. That only works when the API and frontend share a parent domain; otherwise route the callback through the Next.js app (see `server/docs/auth.md`).
+    - _Done 2026-10-07: single-use 60-second code, exchanged by `/auth/google/callback` in the Next.js app; works on separate domains (Vercel + Render). Tested in `server/tests/googleHandoff.test.ts` and `client/tests/e2e/google.spec.ts`._
 - [x] **3.13 [S]** Wire up `changeUserStatus` and `changeUserRole` routes (SUPER_ADMIN only for role changes). They must revoke sessions (3.5).
   - Done:
     - `PATCH /admins/change-user-status`: ADMIN can manage doctors and patients; SUPER_ADMIN can also manage admins.
